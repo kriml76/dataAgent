@@ -13,54 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import { useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useChatStore } from '@/stores/chat';
 import ChatSidebar from '@/components/chat/ChatSidebar';
 import ChatMessageList from '@/components/chat/ChatMessageList';
 import ChatInputArea from '@/components/chat/ChatInputArea';
-
 const ChatPage = () => {
-  const [searchParams] = useSearchParams();
-  const store = useChatStore();
-
-  const currentAgentId = useMemo(() => {
-    const q = searchParams.get('agentId');
-    return q ? Number(q) : undefined;
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (currentAgentId) {
-      init(currentAgentId);
-    }
-  }, [currentAgentId]);
-
-  const init = async (agentId: number) => {
-    store.currentAgentId = agentId;
-
-    // TODO: Load agent info
-    // try {
-    //   const agent = await agentService.get(agentId);
-    //   if (agent) {
-    //     store.currentAgentName = agent.name || '';
-    //     store.currentAgentAvatar = agent.avatar || '';
-    //     store.currentAgentDescription = agent.description || '';
-    //   }
-    // } catch { /* ignore */ }
-
-    store.connectSessionStream(agentId);
-    await store.loadSessions(agentId);
-  };
-
-  useEffect(() => {
-    return () => {
-      store.disconnectSessionStream();
+    const [searchParams] = useSearchParams();
+    const store = useChatStore();
+    const currentAgentId = useMemo(() => {
+        const q = searchParams.get('agentId');
+        return q ? Number(q) : undefined;
+    }, [searchParams]);
+    useEffect(() => {
+        if (currentAgentId) {
+            init(currentAgentId);
+        }
+    }, [currentAgentId]);
+    const init = async (agentId) => {
+        store.currentAgentId = agentId;
+        // TODO: Load agent info
+        // try {
+        //   const agent = await agentService.get(agentId);
+        //   if (agent) {
+        //     store.currentAgentName = agent.name || '';
+        //     store.currentAgentAvatar = agent.avatar || '';
+        //     store.currentAgentDescription = agent.description || '';
+        //   }
+        // } catch { /* ignore */ }
+        store.connectSessionStream(agentId);
+        await store.loadSessions(agentId);
     };
-  }, []);
-
-  return (
-    <div className="chat-page">
+    useEffect(() => {
+        return () => {
+            store.disconnectSessionStream();
+        };
+    }, []);
+    return (<div className="chat-page">
       <div className="chat-sidebar magazine-card">
         <div className="chat-sidebar-header">
           <p className="magazine-label mb-2">Conversation History</p>
@@ -78,8 +68,6 @@ const ChatPage = () => {
           <ChatInputArea />
         </div>
       </div>
-    </div>
-  );
+    </div>);
 };
-
 export default ChatPage;

@@ -15,6 +15,7 @@
  */
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import MainLayout from '@/components/Layout/MainLayout';
 import ChatPage from '@/pages/ChatPage';
 import DashboardPage from '@/pages/DashboardPage';
 import AgentListPage from '@/pages/agent/AgentListPage';
@@ -35,29 +36,29 @@ function AppRouter() {
         {/* Redirect root to agent/new */}
         <Route path="/" element={<Navigate to="/agent/new" replace />} />
         
-        {/* Chat page */}
-        <Route path="/chat" element={<ChatPage />} />
+        {/* Chat page with layout */}
+        <Route path="/chat" element={<MainLayout><ChatPage /></MainLayout>} />
         
-        {/* Dashboard */}
-        <Route path="/dashboard" element={<DashboardPage />} />
+        {/* Dashboard with layout */}
+        <Route path="/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
         
-        {/* Agent routes */}
-        <Route path="/agent" element={<AgentListPage />} />
-        <Route path="/agent/new" element={<NewAgentPage />} />
-        <Route path="/agent/:id" element={<AgentDetailPage />} />
+        {/* Agent routes with layout */}
+        <Route path="/agent" element={<MainLayout><AgentListPage /></MainLayout>} />
+        <Route path="/agent/new" element={<MainLayout><NewAgentPage /></MainLayout>} />
+        <Route path="/agent/:id" element={<MainLayout><AgentDetailPage /></MainLayout>} />
         
-        {/* Knowledge routes */}
-        <Route path="/knowledge/agents" element={<KnowledgeAgentsPage />} />
-        <Route path="/knowledge/business" element={<KnowledgeBusinessPage />} />
-        <Route path="/knowledge/semantic-models" element={<KnowledgeSemanticModelsPage />} />
+        {/* Knowledge routes with layout */}
+        <Route path="/knowledge/agents" element={<MainLayout><KnowledgeAgentsPage /></MainLayout>} />
+        <Route path="/knowledge/business" element={<MainLayout><KnowledgeBusinessPage /></MainLayout>} />
+        <Route path="/knowledge/semantic-models" element={<MainLayout><KnowledgeSemanticModelsPage /></MainLayout>} />
         
-        {/* System routes */}
-        <Route path="/system/agents" element={<SystemAgentsPage />} />
-        <Route path="/system/model-config" element={<ModelConfigPage />} />
-        <Route path="/system/data-sources" element={<DataSourcesPage />} />
+        {/* System routes with layout */}
+        <Route path="/system/agents" element={<MainLayout><SystemAgentsPage /></MainLayout>} />
+        <Route path="/system/model-config" element={<MainLayout><ModelConfigPage /></MainLayout>} />
+        <Route path="/system/data-sources" element={<MainLayout><DataSourcesPage /></MainLayout>} />
         
-        {/* Prompt config */}
-        <Route path="/prompt-config" element={<PromptConfigPage />} />
+        {/* Prompt config with layout */}
+        <Route path="/prompt-config" element={<MainLayout><PromptConfigPage /></MainLayout>} />
       </Routes>
     </BrowserRouter>
   );
