@@ -232,7 +232,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const source = new EventSource(`/api/agent/${agentId}/sessions/stream`);
     source.addEventListener('title-updated', (event) => {
       try {
-        const data = JSON.parse((event as MessageEvent<string>).data as {
+        const data = JSON.parse((event as MessageEvent<string>).data) as {
           sessionId: string;
           title: string;
         };
