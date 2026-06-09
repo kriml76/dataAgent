@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "baseBranch": "main",
+  "generatedAt": "2026-06-09T14:14:00.000Z",
+  "changedFiles": [
+    "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/connector/pool/AbstractDBConnectionPool.java"
+  ],
+  "changedNodeIds": [
+    "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/connector/pool/AbstractDBConnectionPool.java"
+  ],
+  "affectedNodeIds": [
+    "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/connector/impls/mysql/MysqlJdbcConnectionPool.java",
+    "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/connector/impls/postgre/PostgreSqlJdbcConnectionPool.java",
+    "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/connector/impls/oracle/OracleJdbcConnectionPool.java",
+    "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/connector/impls/dameng/DamengJdbcConnectionPool.java",
+    "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/connector/impls/sqlserver/SqlServerJdbcConnectionPool.java",
+    "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/connector/impls/hive/HiveJdbcConnectionPool.java",
+    "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/connector/impls/h2/H2JdbcConnectionPool.java",
+    "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/datasource/impl/DatasourceServiceImpl.java",
+    "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/connector/accessor/AbstractAccessor.java"
+  ]
+}
