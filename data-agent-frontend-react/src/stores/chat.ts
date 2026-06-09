@@ -16,6 +16,10 @@
 
 import { create } from 'zustand';
 import chatService from '@/services/chat';
+import graphService, { TextType } from '@/services/graph';
+import agentDatasourceService from '@/services/agentDatasource';
+import modelConfigService from '@/services/modelConfig';
+import datasourceService from '@/services/datasource';
 
 export interface Datasource {
   id: number;
@@ -142,7 +146,7 @@ interface ChatStore {
   setReportFormat: (format: 'markdown' | 'html') => void;
 }
 
-// Session state manager (simplified version)
+// Session state manager
 const sessionStates = new Map<string, SessionState>();
 
 function getSessionState(sessionId: string): SessionState {
@@ -180,6 +184,11 @@ function deleteSessionState(sessionId: string): void {
   sessionStates.delete(sessionId);
 }
 
+// SSE session stream refs
+let sessionEventSource: EventSource | null = null;
+let sessionReconnectTimer: ReturnType<typeof setTimeout> | null = null;
+let isStoreActive = true;
+
 export const useChatStore = create<ChatStore>((set, get) => ({
   // Initial state
   sessions: [],
@@ -214,19 +223,62 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   // Actions
   connectSessionStream: (agentId: number) => {
-    console.log('Connect session stream for agent:', agentId);
-    // TODO: Implement SSE connection
+    if (sessionReconnectTimer) {
+      clearTimeout(sessionReconnectTimer);
+      sessionReconnectTimer = null;
+    }
+    if (sessionEventSource) sessionEventSource.close();
+
+    const source = new EventSource(`/api/agent/${agentId}/sessions/stream`);
+    source.addEventListener('title-updated', (event) => {
+      try {
+        const data = JSON.parse((event as MessageEvent<string>).data as {
+          sessionId: string;
+          title: string;
+        };
+        set((state) => {
+          const target = state.sessions.find((s) => s.id === data.sessionId);
+          if (target) {
+            target.title = data.title;
+            (target as ExtendedChatSession).editingTitle = data.title;
+          }
+          return {
+            sessions: [...state.sessions],
+            currentSession:
+              state.currentSession?.id === data.sessionId
+                ? { ...state.currentSession, title: data.title }
+                : state.currentSession,
+          };
+        });
+      } catch {
+        /* ignore */
+      }
+    });
+    source.onerror = () => {
+      source.close();
+      sessionEventSource = null;
+      if (isStoreActive)
+        sessionReconnectTimer = setTimeout(
+          () => get().connectSessionStream(agentId),
+          3000,
+        );
+    };
+    sessionEventSource = source;
   },
 
   disconnectSessionStream: () => {
-    console.log('Disconnect session stream');
-    // TODO: Close SSE connection
+    isStoreActive = false;
+    if (sessionReconnectTimer) clearTimeout(sessionReconnectTimer);
+    if (sessionEventSource) {
+      sessionEventSource.close();
+      sessionEventSource = null;
+    }
   },
 
   loadSessions: async (agentId: number) => {
     try {
       const sessions = await chatService.getAgentSessions(agentId);
-      set({ sessions });
+      set({ sessions, currentAgentId: agentId });
 
       if (sessions.length > 0) {
         await get().selectSession(sessions[0]);
@@ -234,7 +286,30 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         await get().createNewSession(agentId);
       }
 
-      // TODO: Load datasources and models
+      // Load global datasources (active)
+      try {
+        const list = await datasourceService.getAllDatasource('active');
+        set({
+          allDatasources: list,
+          activeDatasource: list[0] || null,
+        });
+      } catch {
+        /* ignore */
+      }
+
+      // Load chat models
+      try {
+        const models = await modelConfigService.list();
+        const chatModelsList = models.filter((m: ModelConfig) => m.modelType === 'CHAT');
+        const active = chatModelsList.find((m: ModelConfig) => m.isActive);
+        set({
+          chatModels: chatModelsList,
+          activeModelConfig: active || null,
+          activeChatModel: active?.modelName || '',
+        });
+      } catch {
+        /* ignore */
+      }
     } catch (error) {
       console.error('Failed to load sessions:', error);
     }
@@ -376,8 +451,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         threadId: sessionState.lastRequest?.threadId,
       };
 
-      // TODO: Implement graph request
-      console.log('Send graph request:', request);
+      await _sendGraphRequest(set, get, request, false);
     } catch (error) {
       console.error('Failed to send message:', error);
     }
@@ -436,8 +510,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       humanFeedbackContent: content || 'Accept',
     };
 
-    // TODO: Resend graph request
-    console.log('Submit feedback with new request:', newRequest);
+    await _sendGraphRequest(set, get, newRequest, rejected);
   },
 
   openReportFullscreen: (content: string) => {
@@ -473,7 +546,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
 
     try {
-      // TODO: Call API to switch datasource
+      await agentDatasourceService.addDatasourceToAgent(
+        String(currentAgentId),
+        nextDatasourceId,
+      );
       set((state) => ({
         allDatasources: state.allDatasources.map((item) => ({
           ...item,
@@ -481,24 +557,24 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         })),
         activeDatasource: { ...ds, isActive: true },
       }));
-    } catch (error) {
-      console.error('Failed to switch datasource:', error);
+    } catch (e) {
+      console.error('切换数据源失败', e);
     }
   },
 
   switchModel: async (modelId: number) => {
     try {
-      // TODO: Call API to activate model
-      // Reload models
-      set((state) => {
-        const active = state.chatModels.find((m) => m.id === modelId);
-        return {
-          activeModelConfig: active || null,
-          activeChatModel: active?.modelName || '',
-        };
+      await modelConfigService.activate(modelId);
+      const models = await modelConfigService.list();
+      const chatModelsList = models.filter((m) => m.modelType === 'CHAT');
+      const active = chatModelsList.find((m) => m.isActive);
+      set({
+        chatModels: chatModelsList,
+        activeModelConfig: active || null,
+        activeChatModel: active?.modelName || '',
       });
-    } catch (error) {
-      console.error('Failed to switch model:', error);
+    } catch (e) {
+      console.error('切换模型失败', e);
     }
   },
 
@@ -510,3 +586,251 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({ reportFormat: format });
   },
 }));
+
+// Private: Send graph request with streaming
+async function _sendGraphRequest(
+  set: any,
+  get: any,
+  request: GraphRequest,
+  _rejectedPlan: boolean,
+) {
+  const { currentSession, requestOptions } = get();
+  if (!currentSession) return;
+
+  const sessionId = currentSession.id;
+  const sessionTitle = currentSession.title;
+  const sessionState = getSessionState(sessionId);
+
+  set({
+    lastRequest: request,
+    isStreaming: true,
+    nodeBlocks: [],
+  });
+
+  sessionState.isStreaming = true;
+  sessionState.nodeBlocks = [];
+  sessionState.lastRequest = request;
+  sessionState.htmlReportContent = '';
+  sessionState.htmlReportSize = 0;
+  sessionState.markdownReportContent = '';
+
+  set({
+    streamingReportContent: '',
+    isReportStreaming: false,
+  });
+
+  let currentNodeName: string | null = null;
+  let currentBlockIndex = -1;
+
+  let viewSyncRafId: number | null = null;
+  function scheduleViewSync() {
+    if (viewSyncRafId) return;
+    viewSyncRafId = requestAnimationFrame(() => {
+      viewSyncRafId = null;
+      if (get().currentSession?.id === sessionId) {
+        set({ nodeBlocks: [...sessionState.nodeBlocks] });
+      }
+    });
+  }
+
+  // Throttle report content pushes: batch SSE chunks and push at most
+  // once every ~80ms. This prevents excessive re-renders while keeping
+  // the typewriter animation looking smooth on the frontend.
+  let reportSyncTimer: ReturnType<typeof setTimeout> | null = null;
+  const REPORT_SYNC_INTERVAL = 80; // ms
+  function scheduleReportSync() {
+    if (reportSyncTimer) return;
+    reportSyncTimer = setTimeout(() => {
+      reportSyncTimer = null;
+      if (get().currentSession?.id === sessionId) {
+        set({
+          isReportStreaming: true,
+          streamingReportContent: sessionState.markdownReportContent,
+        });
+      }
+    }, REPORT_SYNC_INTERVAL);
+  }
+
+  function flushPendingSync() {
+    if (viewSyncRafId) {
+      cancelAnimationFrame(viewSyncRafId);
+      viewSyncRafId = null;
+    }
+    if (reportSyncTimer) {
+      clearTimeout(reportSyncTimer);
+      reportSyncTimer = null;
+    }
+    if (get().currentSession?.id === sessionId) {
+      set({ nodeBlocks: [...sessionState.nodeBlocks] });
+      if (sessionState.markdownReportContent) {
+        set({
+          isReportStreaming: true,
+          streamingReportContent: sessionState.markdownReportContent,
+        });
+      }
+    }
+  }
+
+  const closeStream = await graphService.streamSearch(
+    request,
+    async (response: GraphNodeResponse) => {
+      if (response.error) return;
+      if (sessionState.lastRequest)
+        sessionState.lastRequest.threadId = response.threadId;
+
+      if (response.nodeName === 'ReportGeneratorNode') {
+        const isNewNode =
+          currentNodeName === null || response.nodeName !== currentNodeName;
+        if (isNewNode) {
+          sessionState.nodeBlocks.push([{ ...response }]);
+          currentBlockIndex = sessionState.nodeBlocks.length - 1;
+          currentNodeName = response.nodeName;
+        }
+        if (response.textType === 'HTML') {
+          sessionState.htmlReportContent += response.text;
+          sessionState.htmlReportSize = sessionState.htmlReportContent.length;
+          const rn = sessionState.nodeBlocks.find(
+            (b) =>
+              b.length > 0 &&
+              b[0].nodeName === 'ReportGeneratorNode' &&
+              b[0].textType === 'HTML',
+          );
+          if (rn)
+            rn[0].text = `正在收集HTML报告... 已收集 ${sessionState.htmlReportSize} 字节`;
+          else
+            sessionState.nodeBlocks.push([
+            { ...response, text: `正在收集HTML报告...` },
+          ]);
+        } else if (response.textType === 'MARK_DOWN') {
+          sessionState.markdownReportContent += response.text;
+          scheduleReportSync();
+          const rn = sessionState.nodeBlocks.find(
+            (b) =>
+              b.length > 0 &&
+              b[0].nodeName === 'ReportGeneratorNode' &&
+              b[0].textType === 'MARK_DOWN',
+          );
+          if (rn) rn[0].text = sessionState.markdownReportContent;
+          else
+            sessionState.nodeBlocks.push([
+            { ...response, text: response.text },
+          ]);
+        }
+      } else if (response.textType === TextType.RESULT_SET) {
+        currentNodeName = 'result_set';
+        sessionState.nodeBlocks.push([{ ...response }]);
+        currentBlockIndex = sessionState.nodeBlocks.length - 1;
+      } else {
+        const isNewNode =
+          currentNodeName === null || response.nodeName !== currentNodeName;
+        if (isNewNode) {
+          sessionState.nodeBlocks.push([{ ...response }]);
+          currentBlockIndex = sessionState.nodeBlocks.length - 1;
+          currentNodeName = response.nodeName;
+        } else {
+          const currentBlock =
+            currentBlockIndex >= 0
+              ? sessionState.nodeBlocks[currentBlockIndex]
+              : undefined;
+          if (currentBlock) {
+            currentBlock.push({ ...response });
+          } else {
+            sessionState.nodeBlocks.push([{ ...response }]);
+            currentBlockIndex = sessionState.nodeBlocks.length - 1;
+            currentNodeName = response.nodeName;
+          }
+        }
+      }
+
+      scheduleViewSync();
+    },
+    async (error: Error) => {
+      console.error('Stream error:', error);
+      flushPendingSync();
+
+      if (sessionState.nodeBlocks.length > 0) {
+        const msg: ChatMessage = {
+          sessionId,
+          role: 'assistant',
+          content: JSON.stringify(sessionState.nodeBlocks),
+          messageType: 'timeline',
+        };
+        await chatService
+          .saveMessage(sessionId, msg)
+          .catch((e) => console.error(e));
+      }
+
+      // Save error message
+      const errorMsg: ChatMessage = {
+        sessionId,
+        role: 'assistant',
+        content: error.message || '请求失败，请检查网络连接并重试。',
+        messageType: 'error',
+      };
+      await chatService
+        .saveMessage(sessionId, errorMsg)
+        .catch((e) => console.error(e));
+
+      sessionState.isStreaming = false;
+      sessionState.closeStream = null;
+      currentNodeName = null;
+      if (get().currentSession?.id === sessionId) {
+        const messages = await chatService.getSessionMessages(sessionId);
+        set({
+          isStreaming: false,
+          isReportStreaming: false,
+          streamingReportContent: '',
+          currentMessages: messages,
+        });
+      }
+    },
+    async () => {
+      flushPendingSync();
+
+      if (sessionState.nodeBlocks.length > 0) {
+        const timelineMsg: ChatMessage = {
+          sessionId,
+          role: 'assistant',
+          content: JSON.stringify(sessionState.nodeBlocks),
+          messageType: 'timeline',
+        };
+        const savedTimeline = await chatService
+          .saveMessage(sessionId, timelineMsg)
+          .catch((e) => {
+            console.error(e);
+            return null;
+          });
+        if (savedTimeline && get().currentSession?.id === sessionId)
+          set((state: any) => ({
+            currentMessages: [...state.currentMessages, savedTimeline],
+          }));
+      }
+
+      if (requestOptions.humanFeedback && _rejectedPlan) {
+        set({ showHumanFeedback: true });
+      } else {
+        sessionState.isStreaming = false;
+        if (get().currentSession?.id === sessionId) set({ isStreaming: false });
+      }
+
+      if (get().currentSession?.id === sessionId) {
+        set({
+          isReportStreaming: false,
+          streamingReportContent: '',
+        });
+      }
+
+      currentNodeName = null;
+      closeStream();
+      if (get().currentSession?.id === sessionId) {
+        const messages = await chatService.getSessionMessages(sessionId);
+        set({
+          currentMessages: messages,
+          nodeBlocks: [],
+        });
+      }
+      console.log(`会话[${sessionTitle}]处理完成`);
+    },
+  );
+  sessionState.closeStream = closeStream;
+}

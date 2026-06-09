@@ -117,7 +117,7 @@ const ChatInputArea: React.FC = () => {
       <div className="status-bar">
         <div className="status-chips">
           {/* Datasource selector */}
-          <div className="ds-chip-wrap">
+          <div className="ds-chip-wrap" onClick={(e) => e.stopPropagation()}>
             <div
               className={`status-chip status-chip--ds ${store.isStreaming ? 'disabled' : ''}`}
               onClick={toggleDsMenu}
@@ -147,7 +147,7 @@ const ChatInputArea: React.FC = () => {
           </div>
 
           {/* Model selector */}
-          <div className="ds-chip-wrap">
+          <div className="ds-chip-wrap" onClick={(e) => e.stopPropagation()}>
             <div
               className={`status-chip status-chip--model ${
                 store.isStreaming || store.chatModels.length === 0 ? 'disabled' : ''
