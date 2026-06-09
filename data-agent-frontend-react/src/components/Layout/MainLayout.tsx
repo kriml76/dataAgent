@@ -570,24 +570,10 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         
         <Content style={{ 
           padding: 24, 
-          background: 'linear-gradient(135deg, #0a0a0f 0%, #0d0d12 50%, #0a0a0f 100%)',
+          background: '#f7f7f7',
           minHeight: 'calc(100vh - 72px)',
           position: 'relative',
         }}>
-          {/* Background grid pattern */}
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: `
-              linear-gradient(rgba(0, 245, 255, 0.02) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0, 245, 255, 0.02) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px',
-            pointerEvents: 'none',
-          }} />
           
           {/* Content wrapper */}
           <div style={{ position: 'relative', zIndex: 1 }}>
