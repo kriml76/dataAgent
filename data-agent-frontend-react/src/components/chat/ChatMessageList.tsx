@@ -3,6 +3,7 @@ import DOMPurify from 'dompurify';
 import { UserOutlined, RobotOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useChatStore } from '@/stores/chat';
 import { renderMarkdownContent } from '@/utils/markdown';
+import { useEchartsRenderer } from '@/hooks/useEchartsRenderer';
 import ChatWelcome from './ChatWelcome';
 import ChatResultSet, { type ResultData } from './ChatResultSet';
 import ChatWorkflowTimeline, { type GraphNodeResponse } from './ChatWorkflowTimeline';
@@ -68,6 +69,7 @@ function escapeHtml(text: string): string {
 const ChatMessageList: React.FC = () => {
   const store = useChatStore();
   const listRef = useRef<HTMLDivElement>(null);
+  const { renderECharts } = useEchartsRenderer();
 
   const filteredMessages = useMemo(() => {
     const msgs = store.currentMessages;
@@ -98,8 +100,9 @@ const ChatMessageList: React.FC = () => {
   useEffect(() => {
     if (listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight;
+      renderECharts(listRef.current);
     }
-  }, [filteredMessages.length, store.nodeBlocks, store.streamingReportContent]);
+  }, [filteredMessages.length, store.nodeBlocks, store.streamingReportContent, renderECharts]);
 
   const renderMessageContent = (message: any) => {
     if (message.role === 'user') {

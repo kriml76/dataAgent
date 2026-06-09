@@ -15,8 +15,8 @@
  */
 
 import MarkdownIt from 'markdown-it';
-import highlightPlugin from './markdown-plugin-highlight';
-import echartsPlugin from './markdown-plugin-echarts';
+import highlightPlugin from './markdown/markdown-plugin-highlight';
+import echartsPlugin from './markdown/markdown-plugin-echarts';
 
 const md = new MarkdownIt({
   html: true,
