@@ -183,12 +183,13 @@ public abstract class AbstractDBConnectionPool implements DBConnectionPool {
 		props.put(DruidDataSourceFactory.PROP_FILTERS, filters);
 
 		DruidDataSource dataSource = (DruidDataSource) DruidDataSourceFactory.createDataSource(props);
-		dataSource.setBreakAfterAcquireFailure(Boolean.TRUE);
-		dataSource.setConnectionErrorRetryAttempts(2);
+		dataSource.setBreakAfterAcquireFailure(Boolean.FALSE);
+		dataSource.setConnectionErrorRetryAttempts(3);
+		dataSource.setTimeBetweenConnectErrorMillis(3000);
 
 		// 记录数据源创建信息
 		log.info(
-				"Created new DataSource with optimized parameters - InitialSize: 5, MinIdle: 5, MaxActive: 20, MaxWait: 10000ms");
+				"Created new DataSource with optimized parameters - InitialSize: 5, MinIdle: 5, MaxActive: 20, MaxWait: 10000ms, ConnectionErrorRetryAttempts: 3");
 
 		return dataSource;
 	}

@@ -530,6 +530,8 @@ watch(
 .text-body {
 	white-space: pre-wrap;
 	word-break: break-word;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .is-muted .text-body {

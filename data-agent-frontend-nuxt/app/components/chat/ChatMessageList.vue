@@ -397,7 +397,7 @@ watch(
 	border-radius: 4px 16px 16px 16px !important;
 	font-size: 14px;
 	line-height: 1.7;
-	max-width: 75%;
+	width: 100%;
 	word-break: break-word;
 	color: #1e293b;
 	background: #fff !important;

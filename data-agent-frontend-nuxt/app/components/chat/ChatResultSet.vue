@@ -84,6 +84,8 @@ const errorMsg = computed(() => props.data?.resultSet?.errorMsg || '');
 <style scoped>
 .result-set-wrap {
 	font-size: 13px;
+	width: 100%;
+	box-sizing: border-box;
 }
 .result-error {
 	display: flex;
