@@ -14,22 +14,33 @@
  * limitations under the License.
  */
 
-import React from 'react';
-import { Card, Row, Col, Avatar, Tag, Button } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Row, Col, Avatar, Tag, Button, Spin, Empty } from 'antd';
 import { RobotOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import agentService from '@/services/agent';
+import type { Agent } from '@/services/agent';
 
 const AgentListPage: React.FC = () => {
   const navigate = useNavigate();
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - will be replaced with real API calls
-  const agents = Array.from({ length: 6 }, (_, i) => ({
-    id: i + 1,
-    name: `Agent ${i + 1}`,
-    description: 'Specialized AI agent designed for data analysis and intelligent query processing.',
-    tags: ['SQL', 'Analytics', 'Report'],
-    status: 'active',
-  }));
+  useEffect(() => {
+    loadAgents();
+  }, []);
+
+  const loadAgents = async () => {
+    try {
+      setLoading(true);
+      const data = await agentService.list();
+      setAgents(data);
+    } catch (error) {
+      console.error('Failed to load agents:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ padding: 24 }}>
@@ -45,66 +56,74 @@ const AgentListPage: React.FC = () => {
       </div>
 
       {/* Agent Grid */}
-      <Row gutter={[24, 24]}>
-        {agents.map((agent) => (
-          <Col xs={24} sm={12} lg={8} key={agent.id}>
-            <Card
-              hoverable
-              onClick={() => navigate(`/agent/${agent.id}`)}
-              style={{ height: '100%' }}
-              bodyStyle={{ padding: 24 }}
-            >
-              {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-                <Avatar size={48} icon={<RobotOutlined />} style={{ backgroundColor: 'rgba(193,127,89,0.1)' }} />
-                <Tag color="green" style={{ borderRadius: 4 }}>
-                  <span style={{ marginRight: 4 }}>●</span>
-                  Active
-                </Tag>
-              </div>
+      <Spin spinning={loading}>
+        {agents.length === 0 && !loading ? (
+          <Empty description="No agents found" />
+        ) : (
+          <Row gutter={[24, 24]}>
+            {agents.map((agent) => (
+              <Col xs={24} sm={12} lg={8} key={agent.id}>
+                <Card
+                  hoverable
+                  onClick={() => navigate(`/agent/${agent.id}`)}
+                  style={{ height: '100%' }}
+                  bodyStyle={{ padding: 24 }}
+                >
+                  {/* Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                    <Avatar size={48} icon={<RobotOutlined />} style={{ backgroundColor: 'rgba(193,127,89,0.1)' }} />
+                    <Tag color="green" style={{ borderRadius: 4 }}>
+                      <span style={{ marginRight: 4 }}>●</span>
+                      Active
+                    </Tag>
+                  </div>
 
-              {/* Content */}
-              <h3 style={{ margin: '0 0 8px 0', fontSize: 18, fontWeight: 600 }}>{agent.name}</h3>
-              <p style={{ color: '#6b6b6b', fontSize: 14, lineHeight: 1.6, margin: 0 }}>
-                {agent.description}
-              </p>
+                  {/* Content */}
+                  <h3 style={{ margin: '0 0 8px 0', fontSize: 18, fontWeight: 600 }}>{agent.name}</h3>
+                  <p style={{ color: '#6b6b6b', fontSize: 14, lineHeight: 1.6, margin: 0 }}>
+                    {agent.description || 'No description available'}
+                  </p>
 
-              {/* Footer */}
-              <div style={{ marginTop: 16 }}>
-                <div style={{ color: '#6b6b6b', fontSize: 12, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
-                  Capabilities
+                  {/* Footer */}
+                  {agent.tags && agent.tags.length > 0 && (
+                    <div style={{ marginTop: 16 }}>
+                      <div style={{ color: '#6b6b6b', fontSize: 12, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+                        Capabilities
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {agent.tags.split(',').map((tag) => (
+                          <Tag key={tag.trim()} style={{ borderRadius: 4 }}>{tag.trim()}</Tag>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              </Col>
+            ))}
+
+            {/* Create New Agent Card */}
+            <Col xs={24} sm={12} lg={8}>
+              <Card
+                hoverable
+                onClick={() => navigate('/agent/new')}
+                style={{
+                  height: '100%',
+                  border: '2px dashed #d9d9d9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                bodyStyle={{ padding: 24, textAlign: 'center' }}
+              >
+                <div>
+                  <PlusOutlined style={{ fontSize: 48, color: '#c17f59', marginBottom: 16 }} />
+                  <div style={{ fontSize: 16, fontWeight: 600, color: '#c17f59' }}>Create New Agent</div>
                 </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {agent.tags.map((tag) => (
-                    <Tag key={tag} style={{ borderRadius: 4 }}>{tag}</Tag>
-                  ))}
-                </div>
-              </div>
-            </Card>
-          </Col>
-        ))}
-
-        {/* Create New Agent Card */}
-        <Col xs={24} sm={12} lg={8}>
-          <Card
-            hoverable
-            onClick={() => navigate('/agent/new')}
-            style={{
-              height: '100%',
-              border: '2px dashed #d9d9d9',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            bodyStyle={{ padding: 24, textAlign: 'center' }}
-          >
-            <div>
-              <PlusOutlined style={{ fontSize: 48, color: '#c17f59', marginBottom: 16 }} />
-              <div style={{ fontSize: 16, fontWeight: 600, color: '#c17f59' }}>Create New Agent</div>
-            </div>
-          </Card>
-        </Col>
-      </Row>
+              </Card>
+            </Col>
+          </Row>
+        )}
+      </Spin>
     </div>
   );
 };

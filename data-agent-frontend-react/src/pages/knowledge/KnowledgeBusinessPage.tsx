@@ -14,27 +14,37 @@
  * limitations under the License.
  */
 
-import React from 'react';
-import { Card, Table, Button, Input, Space, Tag } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Table, Button, Input, Space, Tag, Spin, Empty } from 'antd';
 import { SearchOutlined, PlusOutlined, SyncOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-
-interface BusinessKnowledge {
-  id: number;
-  businessTerm: string;
-  description: string;
-  synonyms: string;
-  isRecall: boolean;
-}
+import businessKnowledgeService from '@/services/businessKnowledge';
+import type { BusinessKnowledgeVO } from '@/services/businessKnowledge';
 
 const KnowledgeBusinessPage: React.FC = () => {
-  // Mock data
-  const dataSource: BusinessKnowledge[] = [
-    { id: 1, businessTerm: 'Revenue', description: 'Total income generated', synonyms: 'income, earnings', isRecall: true },
-    { id: 2, businessTerm: 'Customer', description: 'End user of products', synonyms: 'client, buyer', isRecall: true },
-  ];
+  const [dataSource, setDataSource] = useState<BusinessKnowledgeVO[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
 
-  const columns: ColumnsType<BusinessKnowledge> = [
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      // TODO: Get agentId from route or context
+      const agentId = 1; // Placeholder
+      const data = await businessKnowledgeService.list(agentId, searchKeyword || undefined);
+      setDataSource(data);
+    } catch (error) {
+      console.error('Failed to load business knowledge:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const columns: ColumnsType<BusinessKnowledgeVO> = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
     { title: 'Business Term', dataIndex: 'businessTerm', key: 'businessTerm' },
     { title: 'Description', dataIndex: 'description', key: 'description' },
@@ -72,12 +82,18 @@ const KnowledgeBusinessPage: React.FC = () => {
 
       {/* Table */}
       <Card bordered={false}>
-        <Table
-          columns={columns}
-          dataSource={dataSource}
-          rowKey="id"
-          pagination={{ pageSize: 10 }}
-        />
+        <Spin spinning={loading}>
+          {dataSource.length === 0 && !loading ? (
+            <Empty description="No business knowledge found" />
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={dataSource}
+              rowKey="id"
+              pagination={{ pageSize: 10 }}
+            />
+          )}
+        </Spin>
       </Card>
     </div>
   );
