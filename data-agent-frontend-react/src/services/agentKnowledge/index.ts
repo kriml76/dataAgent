@@ -86,7 +86,7 @@ export interface PageResult<T> {
   message?: string;
 }
 
-const API_BASE_URL = '/api/agent-knowledge';
+const API_BASE_URL = '/agent-knowledge';
 
 /**
  * @description 智能体知识库业务逻辑处理类

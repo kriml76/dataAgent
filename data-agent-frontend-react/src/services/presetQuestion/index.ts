@@ -50,7 +50,7 @@ export interface PresetQuestionDTO {
   isActive?: boolean;
 }
 
-const API_BASE_URL = '/api/agent';
+const API_BASE_URL = '/agent';
 
 /**
  * @description 预设问题业务逻辑处理类

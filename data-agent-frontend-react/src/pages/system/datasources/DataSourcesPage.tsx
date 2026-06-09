@@ -32,7 +32,7 @@ const DataSourcesPage: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const data = await datasourceService.list();
+      const data = await datasourceService.getAllDatasource();
       setDataSource(data);
     } catch (error) {
       console.error('Failed to load datasources:', error);

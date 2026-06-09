@@ -55,7 +55,7 @@ export interface Agent {
   humanReviewEnabled?: number | boolean;
 }
 
-const API_BASE_URL = '/api/agent';
+const API_BASE_URL = '/agent';
 
 /**
  * @description 智能体 API Key 响应结构

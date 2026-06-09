@@ -119,7 +119,7 @@ export interface BatchImportResult {
   errors: string[];
 }
 
-const API_BASE_URL = '/api/semantic-model';
+const API_BASE_URL = '/semantic-model';
 
 /**
  * @description 语义模型业务逻辑处理类
