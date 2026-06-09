@@ -139,6 +139,7 @@ interface ChatStore {
   switchDatasource: (ds: Datasource) => Promise<void>;
   switchModel: (modelId: number) => Promise<void>;
   setChatSidebarCollapsed: (collapsed: boolean) => void;
+  setReportFormat: (format: 'markdown' | 'html') => void;
 }
 
 // Session state manager (simplified version)
@@ -503,5 +504,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   setChatSidebarCollapsed: (collapsed: boolean) => {
     set({ chatSidebarCollapsed: collapsed });
+  },
+
+  setReportFormat: (format: 'markdown' | 'html') => {
+    set({ reportFormat: format });
   },
 }));
