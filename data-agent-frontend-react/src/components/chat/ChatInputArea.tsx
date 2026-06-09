@@ -1,12 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  SendOutlined,
-  StopOutlined,
+  UpOutlined,
+  DownOutlined,
   DatabaseOutlined,
   ThunderboltOutlined,
   CheckOutlined,
   CloseOutlined,
   ExclamationCircleOutlined,
+  UserOutlined,
+  TableOutlined,
+  SearchOutlined,
+  ArrowRightOutlined,
+  PauseCircleOutlined,
 } from '@ant-design/icons';
 import { useChatStore } from '@/stores/chat';
 import './ChatInputArea.css';
@@ -45,6 +50,13 @@ const ChatInputArea: React.FC = () => {
     if (!query || !store.currentSession || store.isStreaming) return;
 
     setInputText('');
+    // Reset textarea height after sending
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
+    }, 0);
+
     try {
       await store.sendMessage(query);
     } catch (e) {
@@ -64,6 +76,22 @@ const ChatInputArea: React.FC = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const toggleDsMenu = () => {
+    if (store.isStreaming) return;
+    setShowDsMenu(!showDsMenu);
+    if (!showDsMenu) {
+      setShowModelMenu(false);
+    }
+  };
+
+  const toggleModelMenu = () => {
+    if (store.isStreaming || store.chatModels.length === 0) return;
+    setShowModelMenu(!showModelMenu);
+    if (!showModelMenu) {
+      setShowDsMenu(false);
     }
   };
 
@@ -92,10 +120,15 @@ const ChatInputArea: React.FC = () => {
           <div className="ds-chip-wrap">
             <div
               className={`status-chip status-chip--ds ${store.isStreaming ? 'disabled' : ''}`}
-              onClick={() => !store.isStreaming && setShowDsMenu(!showDsMenu)}
+              onClick={toggleDsMenu}
             >
               <DatabaseOutlined style={{ fontSize: 13, color: '#64748b' }} />
               <span>{store.activeDatasource?.name || '选择数据库'}</span>
+              {showDsMenu ? (
+                <UpOutlined style={{ fontSize: 13, color: '#94a3b8' }} />
+              ) : (
+                <DownOutlined style={{ fontSize: 13, color: '#94a3b8' }} />
+              )}
             </div>
             {showDsMenu && (
               <div className="chip-dropdown">
@@ -119,10 +152,15 @@ const ChatInputArea: React.FC = () => {
               className={`status-chip status-chip--model ${
                 store.isStreaming || store.chatModels.length === 0 ? 'disabled' : ''
               }`}
-              onClick={() => !store.isStreaming && store.chatModels.length > 0 && setShowModelMenu(!showModelMenu)}
+              onClick={toggleModelMenu}
             >
               <ThunderboltOutlined style={{ fontSize: 13, color: '#3b82f6' }} />
               <span>{store.activeModelConfig?.modelName || '选择AI模型'}</span>
+              {showModelMenu ? (
+                <UpOutlined style={{ fontSize: 13, color: '#94a3b8' }} />
+              ) : (
+                <DownOutlined style={{ fontSize: 13, color: '#94a3b8' }} />
+              )}
             </div>
             {showModelMenu && (
               <div className="chip-dropdown">
@@ -170,7 +208,7 @@ const ChatInputArea: React.FC = () => {
                   store.requestOptions.humanFeedback = !store.requestOptions.humanFeedback;
                 }}
               />
-              <CheckOutlined style={{ fontSize: 11 }} />
+              <UserOutlined style={{ fontSize: 11 }} />
               人工反馈
             </label>
             <label className={`option-chip ${store.requestOptions.nl2sqlOnly ? 'active' : ''}`}>
@@ -184,7 +222,7 @@ const ChatInputArea: React.FC = () => {
                   handleNl2sqlChange();
                 }}
               />
-              <DatabaseOutlined style={{ fontSize: 11 }} />
+              <SearchOutlined style={{ fontSize: 11 }} />
               仅NL2SQL
             </label>
             <label className={`option-chip ${store.requestOptions.showSqlResults ? 'active' : ''}`}>
@@ -197,7 +235,7 @@ const ChatInputArea: React.FC = () => {
                   store.requestOptions.showSqlResults = !store.requestOptions.showSqlResults;
                 }}
               />
-              <DatabaseOutlined style={{ fontSize: 11 }} />
+              <TableOutlined style={{ fontSize: 11 }} />
               显示SQL结果
             </label>
           </div>
@@ -211,11 +249,11 @@ const ChatInputArea: React.FC = () => {
               onClick={handleSend}
             >
               发送
-              <SendOutlined style={{ marginLeft: 8, fontSize: 14 }} />
+              <ArrowRightOutlined style={{ marginLeft: 8, fontSize: 16 }} />
             </button>
           ) : (
             <button className="stop-btn" onClick={handleStop}>
-              <StopOutlined style={{ marginRight: 8, fontSize: 14 }} />
+              <PauseCircleOutlined style={{ marginRight: 8, fontSize: 16, color: 'white' }} />
               停止
             </button>
           )}
