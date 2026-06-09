@@ -875,7 +875,12 @@ const DataSourcesPage: React.FC = () => {
 
       {/* Foreign Key Dialog */}
       <Modal
-        title={`逻辑外键 - ${fkDatasourceName}`}
+        title={
+          <Space>
+            <LinkOutlined style={{ color: '#1677ff' }} />
+            <span>逻辑外键配置 - {fkDatasourceName}</span>
+          </Space>
+        }
         open={fkDialogVisible}
         onCancel={() => setFkDialogVisible(false)}
         footer={[
@@ -885,34 +890,158 @@ const DataSourcesPage: React.FC = () => {
         ]}
         width={900}
       >
-        <Spin spinning={loadingRelations}>
-          {logicalRelations.length === 0 ? (
-            <Empty description="暂无逻辑外键关系" />
-          ) : (
-            <Table
-              dataSource={logicalRelations}
-              rowKey="id"
-              pagination={false}
-              columns={[
-                { title: '源表', dataIndex: 'sourceTableName', key: 'sourceTableName' },
-                { title: '源列', dataIndex: 'sourceColumnName', key: 'sourceColumnName' },
-                { title: '目标表', dataIndex: 'targetTableName', key: 'targetTableName' },
-                { title: '目标列', dataIndex: 'targetColumnName', key: 'targetColumnName' },
-                { 
-                  title: '关系类型', 
-                  dataIndex: 'relationType', 
-                  key: 'relationType',
-                  render: (type: string) => <Tag>{type}</Tag>
-                },
-                { title: '描述', dataIndex: 'description', key: 'description' },
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 8 }}>已生效的关系列表</div>
+          <Spin spinning={loadingRelations}>
+            {logicalRelations.length === 0 ? (
+              <Empty description="暂无逻辑外键配置" />
+            ) : (
+              <Table
+                dataSource={logicalRelations}
+                rowKey="id"
+                pagination={false}
+                size="small"
+                columns={[
+                  {
+                    title: '主表 (Source)',
+                    key: 'source',
+                    render: (_, record: LogicalRelation) => (
+                      <div>
+                        <div style={{ fontWeight: 600, color: '#0958d9' }}>{record.sourceTableName}</div>
+                        <div style={{ fontSize: 12, color: '#8c8c8c' }}>{record.sourceColumnName}</div>
+                      </div>
+                    ),
+                  },
+                  {
+                    title: '关系',
+                    key: 'relation',
+                    width: 100,
+                    align: 'center',
+                    render: (_, record: LogicalRelation) => (
+                      <div style={{ textAlign: 'center' }}>
+                        <LinkOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
+                        <div style={{ fontSize: 12, fontWeight: 600, color: '#434343' }}>
+                          {record.relationType}
+                        </div>
+                      </div>
+                    ),
+                  },
+                  {
+                    title: '关联表 (Target)',
+                    key: 'target',
+                    render: (_, record: LogicalRelation) => (
+                      <div>
+                        <div style={{ fontWeight: 600, color: '#237804' }}>{record.targetTableName}</div>
+                        <div style={{ fontSize: 12, color: '#8c8c8c' }}>{record.targetColumnName}</div>
+                      </div>
+                    ),
+                  },
+                  {
+                    title: '操作',
+                    key: 'actions',
+                    width: 80,
+                    align: 'right',
+                    render: (_, record: LogicalRelation) => (
+                      <Button
+                        type="link"
+                        size="small"
+                        danger
+                        icon={<DeleteOutlined />}
+                        loading={deletingRelationId === record.id}
+                        onClick={() => handleDeleteRelation(record.id!)}
+                      />
+                    ),
+                  },
+                ]}
+              />
+            )}
+          </Spin>
+        </div>
+
+        <div style={{ 
+          background: '#f5f5f5', 
+          padding: 20, 
+          borderRadius: 8,
+          border: '1px solid #d9d9d9'
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '5fr 2fr 5fr', gap: 16, alignItems: 'start' }}>
+            {/* Source side */}
+            <div>
+              <Select
+                value={fkForm.sourceTableName || undefined}
+                onChange={(value) => {
+                  setFkForm(prev => ({ ...prev, sourceTableName: value }));
+                  fetchColumns(value, 'source');
+                }}
+                placeholder="请选择主表"
+                style={{ width: '100%', marginBottom: 12 }}
+                options={tables.map(t => ({ label: t, value: t }))}
+                allowClear
+              />
+              <Select
+                value={fkForm.sourceColumnName || undefined}
+                onChange={(value) => setFkForm(prev => ({ ...prev, sourceColumnName: value }))}
+                placeholder={!fkForm.sourceTableName ? "先选择主表" : "请选择主表字段"}
+                style={{ width: '100%' }}
+                options={sourceColumns.map(c => ({ label: c, value: c }))}
+                disabled={!fkForm.sourceTableName}
+                loading={loadingSourceColumns}
+                allowClear
+              />
+            </div>
+
+            {/* Arrow */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 20 }}>
+              <span style={{ fontSize: 24, color: '#d9d9d9' }}>→</span>
+            </div>
+
+            {/* Target side */}
+            <div>
+              <Select
+                value={fkForm.targetTableName || undefined}
+                onChange={(value) => {
+                  setFkForm(prev => ({ ...prev, targetTableName: value }));
+                  fetchColumns(value, 'target');
+                }}
+                placeholder="请选择关联表"
+                style={{ width: '100%', marginBottom: 12 }}
+                options={tables.map(t => ({ label: t, value: t }))}
+                allowClear
+              />
+              <Select
+                value={fkForm.targetColumnName || undefined}
+                onChange={(value) => setFkForm(prev => ({ ...prev, targetColumnName: value }))}
+                placeholder={!fkForm.targetTableName ? "先选择关联表" : "请选择关联字段"}
+                style={{ width: '100%' }}
+                options={targetColumns.map(c => ({ label: c, value: c }))}
+                disabled={!fkForm.targetTableName}
+                loading={loadingTargetColumns}
+                allowClear
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+            <Select
+              value={fkForm.relationType}
+              onChange={(value) => setFkForm(prev => ({ ...prev, relationType: value }))}
+              style={{ flex: 1 }}
+              options={[
+                { label: '1:1', value: '1:1' },
+                { label: '1:N', value: '1:N' },
+                { label: 'N:1', value: 'N:1' },
               ]}
             />
-          )}
-        </Spin>
-        <div style={{ marginTop: 16, textAlign: 'center' }}>
-          <Button type="primary" icon={<LinkOutlined />} onClick={() => message.info('添加逻辑外键功能待实现')}>
-            添加逻辑外键
-          </Button>
+            <Button
+              type="primary"
+              style={{ height: 32 }}
+              loading={addingRelation}
+              disabled={!isFormValid}
+              onClick={handleAddRelation}
+            >
+              添加关系
+            </Button>
+          </div>
         </div>
       </Modal>
 
