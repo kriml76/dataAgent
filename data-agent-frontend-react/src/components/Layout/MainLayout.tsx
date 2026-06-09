@@ -203,7 +203,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   ];
 
   return (
-    <Layout style={{ minHeight: '100vh', background: '#0a0a0f' }}>
+    <Layout style={{ minHeight: '100vh', background: '#0a0a0f', overflow: 'hidden' }}>
       <Sider
         collapsible
         collapsed={collapsed}
@@ -216,6 +216,9 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           borderRight: '1px solid rgba(0, 245, 255, 0.15)',
           boxShadow: 'inset -1px 0 20px rgba(0, 245, 255, 0.05)',
           overflow: 'hidden',
+          height: '100vh',
+          position: 'sticky',
+          top: 0,
         }}
       >
         <div style={{ 
