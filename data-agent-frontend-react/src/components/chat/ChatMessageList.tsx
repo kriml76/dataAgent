@@ -1,8 +1,8 @@
 import React, { useMemo, useRef, useEffect } from 'react';
 import DOMPurify from 'dompurify';
-import marked from 'marked';
-import { UserOutlined, RobotOutlined, InfoCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { UserOutlined, RobotOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useChatStore } from '@/stores/chat';
+import { renderMarkdownContent } from '@/utils/markdown';
 import ChatWelcome from './ChatWelcome';
 import ChatResultSet, { type ResultData } from './ChatResultSet';
 import ChatWorkflowTimeline, { type GraphNodeResponse } from './ChatWorkflowTimeline';
@@ -17,7 +17,7 @@ const SANITIZE_OPTIONS = {
 
 function renderMarkdown(content: string): string {
   if (!content) return '';
-  return DOMPurify.sanitize(marked.parse(content) as string, SANITIZE_OPTIONS) as string;
+  return DOMPurify.sanitize(renderMarkdownContent(content), SANITIZE_OPTIONS) as string;
 }
 
 function sanitizeHtml(content: string): string {

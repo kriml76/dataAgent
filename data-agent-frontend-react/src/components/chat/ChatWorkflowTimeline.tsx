@@ -1,9 +1,18 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { PieChartOutlined, UpOutlined, DownOutlined, RocketOutlined } from '@ant-design/icons';
-import hljs from 'highlight.js';
+import hljs from 'highlight.js/lib/core';
+import Sql from 'highlight.js/lib/languages/sql';
+import Python from 'highlight.js/lib/languages/python';
+import Json from 'highlight.js/lib/languages/json';
+import JavaScript from 'highlight.js/lib/languages/javascript';
 import DOMPurify from 'dompurify';
 import ChatResultSet, { type ResultData } from './ChatResultSet';
 import './ChatWorkflowTimeline.css';
+
+hljs.registerLanguage('sql', Sql);
+hljs.registerLanguage('json', Json);
+hljs.registerLanguage('python', Python);
+hljs.registerLanguage('javascript', JavaScript);
 
 export interface GraphNodeResponse {
   nodeName: string;
