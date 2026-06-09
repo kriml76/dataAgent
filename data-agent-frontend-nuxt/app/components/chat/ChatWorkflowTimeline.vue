@@ -419,6 +419,19 @@ watch(
 	width: 100%;
 }
 
+:deep(.v-timeline) {
+	width: 100%;
+}
+
+:deep(.v-timeline-item) {
+	width: 100%;
+}
+
+:deep(.v-timeline-item__content) {
+	width: 100%;
+	min-width: 0;
+}
+
 /* ── Title bar ───────────────────────────────────────────────────────────────── */
 .timeline-title-bar {
 	display: flex;
@@ -511,6 +524,7 @@ watch(
 	color: #1e293b;
 	min-width: 0;
 	overflow: hidden;
+	width: 100%;
 }
 
 .text-body {
@@ -545,6 +559,8 @@ watch(
 	overflow-x: auto;
 	white-space: pre;
 	margin: 4px 0 0;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 /* ── Markdown inside step content ────────────────────────────────────────────── */

@@ -198,6 +198,8 @@ watch(
 watch(format, (val) => {
 	if (val === 'html') {
 		nextTick(() => loadHtmlToIframe(htmlIframeRef.value, props.content));
+	} else {
+		nextTick(() => renderECharts(reportBodyRef.value));
 	}
 });
 

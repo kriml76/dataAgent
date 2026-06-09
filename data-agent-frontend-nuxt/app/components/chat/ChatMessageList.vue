@@ -417,6 +417,7 @@ watch(
 	max-width: 100% !important;
 	flex: 1;
 	min-width: 0;
+	width: 100%;
 }
 
 /* ── Thinking dots ───────────────────────────────────────────────────────────── */
