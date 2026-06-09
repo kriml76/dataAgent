@@ -14,26 +14,32 @@
  * limitations under the License.
  */
 
-import React from 'react';
-import { Card, Table, Button, Space, Tag } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Table, Button, Space, Tag, Spin, Empty } from 'antd';
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-
-interface Datasource {
-  id: number;
-  name: string;
-  type: string;
-  host: string;
-  status: string;
-  testStatus: string;
-}
+import datasourceService from '@/services/datasource';
+import type { Datasource } from '@/services/datasource';
 
 const DataSourcesPage: React.FC = () => {
-  // Mock data
-  const dataSource: Datasource[] = [
-    { id: 1, name: 'Production DB', type: 'MySQL', host: 'localhost:3306', status: 'active', testStatus: 'success' },
-    { id: 2, name: 'Analytics DB', type: 'PostgreSQL', host: 'localhost:5432', status: 'active', testStatus: 'success' },
-  ];
+  const [dataSource, setDataSource] = useState<Datasource[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const data = await datasourceService.list();
+      setDataSource(data);
+    } catch (error) {
+      console.error('Failed to load datasources:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const columns: ColumnsType<Datasource> = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
@@ -72,12 +78,18 @@ const DataSourcesPage: React.FC = () => {
 
       {/* Table */}
       <Card bordered={false}>
-        <Table
-          columns={columns}
-          dataSource={dataSource}
-          rowKey="id"
-          pagination={{ pageSize: 10 }}
-        />
+        <Spin spinning={loading}>
+          {dataSource.length === 0 && !loading ? (
+            <Empty description="No data sources found" />
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={dataSource}
+              rowKey="id"
+              pagination={{ pageSize: 10 }}
+            />
+          )}
+        </Spin>
       </Card>
     </div>
   );
