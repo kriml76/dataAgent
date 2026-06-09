@@ -3,6 +3,8 @@
   background: white;
   border-top: 1px solid #e8edf2;
   padding: 12px 32px 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* ── Status bar ──────────────────────────────────────────────────────────────── */

@@ -73,6 +73,7 @@ const ChatMessageList: React.FC = () => {
 
   const filteredMessages = useMemo(() => {
     const msgs = store.currentMessages;
+    console.log(msgs);
     if (!msgs.length) return msgs;
 
     const result: typeof msgs = [];

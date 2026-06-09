@@ -6,6 +6,9 @@
   flex: 1;
   padding: 40px 24px;
   text-align: center;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .agent-avatar-wrap {
