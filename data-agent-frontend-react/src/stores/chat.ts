@@ -18,21 +18,10 @@ import { create } from 'zustand';
 import chatService from '@/services/chat';
 import graphService, { TextType } from '@/services/graph';
 import agentDatasourceService from '@/services/agentDatasource';
-import modelConfigService from '@/services/modelConfig';
-import datasourceService from '@/services/datasource';
+import modelConfigService, { type ModelConfig } from '@/services/modelConfig';
+import datasourceService, { type Datasource as DsDatasource } from '@/services/datasource';
 
-export interface Datasource {
-  id: number;
-  name: string;
-  type?: string;
-  isActive?: boolean;
-}
-
-export interface ModelConfig {
-  id: number;
-  modelName: string;
-  provider: string;
-  modelType: string;
+export interface Datasource extends DsDatasource {
   isActive?: boolean;
 }
 
