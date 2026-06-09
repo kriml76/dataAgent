@@ -30,19 +30,20 @@ function getSessionState(sessionId) {
     }
     return sessionStates.get(sessionId);
 }
-function syncStateToView(sessionId, state) {
+function syncStateToView(sessionId, set) {
     const sessionState = getSessionState(sessionId);
-    if (state.isStreaming)
-        state.isStreaming.current = sessionState.isStreaming;
-    if (state.nodeBlocks)
-        state.nodeBlocks.current = [...sessionState.nodeBlocks];
+    set({
+        isStreaming: sessionState.isStreaming,
+        nodeBlocks: [...sessionState.nodeBlocks],
+        streamingReportContent: sessionState.markdownReportContent,
+        isReportStreaming: sessionState.isStreaming && sessionState.markdownReportContent.length > 0,
+    });
 }
-function saveViewToState(sessionId, state) {
+function saveViewToState(sessionId, get) {
     const sessionState = getSessionState(sessionId);
-    if (state.isStreaming)
-        sessionState.isStreaming = state.isStreaming.current;
-    if (state.nodeBlocks)
-        sessionState.nodeBlocks = [...state.nodeBlocks.current];
+    sessionState.isStreaming = get().isStreaming;
+    sessionState.nodeBlocks = [...get().nodeBlocks];
+    sessionState.markdownReportContent = get().streamingReportContent;
 }
 function deleteSessionState(sessionId) {
     sessionStates.delete(sessionId);
@@ -118,20 +119,14 @@ export const useChatStore = create((set, get) => ({
         }
     },
     selectSession: async (session) => {
-        const { currentSession } = get();
+        const { currentSession: prevSession } = get();
         // Save current session state
-        if (currentSession) {
-            saveViewToState(currentSession.id, {
-                isStreaming: { current: get().isStreaming },
-                nodeBlocks: { current: get().nodeBlocks },
-            });
+        if (prevSession) {
+            saveViewToState(prevSession.id, get);
         }
-        set({ currentSession });
+        set({ currentSession: session });
         // Sync state to view
-        syncStateToView(session.id, {
-            isStreaming: { current: null },
-            nodeBlocks: { current: null },
-        });
+        syncStateToView(session.id, set);
         try {
             const messages = await chatService.getSessionMessages(session.id);
             set({ currentMessages: messages });
