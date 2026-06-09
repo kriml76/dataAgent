@@ -212,9 +212,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                           <div style={{ color: '#6b6b6b', fontSize: 11 }}>{agent.subtitle}</div>
                         )}
                       </div>
-                      {selectedAgentId === agent.value && (
-                        <CheckOutlined style={{ color: '#c17f59', marginLeft: 'auto' }} />
-                      )}
+                   
                     </div>
                   </Option>
                 ))}
