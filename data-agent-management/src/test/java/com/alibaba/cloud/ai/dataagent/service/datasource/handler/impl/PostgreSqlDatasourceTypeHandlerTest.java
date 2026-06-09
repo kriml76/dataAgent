@@ -66,7 +66,7 @@ class PostgreSqlDatasourceTypeHandlerTest {
 
 	@Test
 	void hasRequiredConnectionFields_trueWhenAllPresent() {
-		Datasource ds = Datasource.builder().host("localhost").port(5432).databaseName("testdb").build();
+		Datasource ds = Datasource.builder().host("localhost").port(5433).databaseName("testdb").build();
 		assertTrue(handler.hasRequiredConnectionFields(ds));
 	}
 
@@ -78,16 +78,16 @@ class PostgreSqlDatasourceTypeHandlerTest {
 
 	@Test
 	void buildConnectionUrl_constructsValidUrl() {
-		Datasource ds = Datasource.builder().host("pghost").port(5432).databaseName("mydb").build();
+		Datasource ds = Datasource.builder().host("pghost").port(5433).databaseName("mydb").build();
 		String url = handler.buildConnectionUrl(ds);
-		assertTrue(url.startsWith("jdbc:postgresql://pghost:5432/mydb?"));
+		assertTrue(url.startsWith("jdbc:postgresql://pghost:5433/mydb?"));
 		assertTrue(url.contains("useUnicode=true"));
 		assertTrue(url.contains("useSSL=false"));
 	}
 
 	@Test
 	void buildConnectionUrl_extractsDatabaseFromPipeFormat() {
-		Datasource ds = Datasource.builder().host("pghost").port(5432).databaseName("mydb|public").build();
+		Datasource ds = Datasource.builder().host("pghost").port(5433).databaseName("mydb|public").build();
 		String url = handler.buildConnectionUrl(ds);
 		assertTrue(url.contains("/mydb?"));
 		assertFalse(url.contains("public"));
@@ -95,26 +95,26 @@ class PostgreSqlDatasourceTypeHandlerTest {
 
 	@Test
 	void buildConnectionUrl_fallsBackToConnectionUrlWhenFieldsMissing() {
-		Datasource ds = Datasource.builder().connectionUrl("jdbc:postgresql://fallback:5432/db").build();
-		assertEquals("jdbc:postgresql://fallback:5432/db", handler.buildConnectionUrl(ds));
+		Datasource ds = Datasource.builder().connectionUrl("jdbc:postgresql://fallback:5433/db").build();
+		assertEquals("jdbc:postgresql://fallback:5433/db", handler.buildConnectionUrl(ds));
 	}
 
 	@Test
 	void resolveConnectionUrl_prefersExistingUrl() {
 		Datasource ds = Datasource.builder()
 			.host("localhost")
-			.port(5432)
+			.port(5433)
 			.databaseName("mydb")
-			.connectionUrl("jdbc:postgresql://explicit:5432/db")
+			.connectionUrl("jdbc:postgresql://explicit:5433/db")
 			.build();
-		assertEquals("jdbc:postgresql://explicit:5432/db", handler.resolveConnectionUrl(ds));
+		assertEquals("jdbc:postgresql://explicit:5433/db", handler.resolveConnectionUrl(ds));
 	}
 
 	@Test
 	void resolveConnectionUrl_buildsWhenNoExistingUrl() {
-		Datasource ds = Datasource.builder().host("localhost").port(5432).databaseName("mydb").build();
+		Datasource ds = Datasource.builder().host("localhost").port(5433).databaseName("mydb").build();
 		String url = handler.resolveConnectionUrl(ds);
-		assertTrue(url.startsWith("jdbc:postgresql://localhost:5432/mydb?"));
+		assertTrue(url.startsWith("jdbc:postgresql://localhost:5433/mydb?"));
 	}
 
 	@Test
@@ -145,7 +145,7 @@ class PostgreSqlDatasourceTypeHandlerTest {
 	void toDbConfig_usesExtractedSchema() {
 		Datasource ds = Datasource.builder()
 			.host("localhost")
-			.port(5432)
+			.port(5433)
 			.databaseName("mydb|myschema")
 			.username("pguser")
 			.password("pgpass")

@@ -51,7 +51,8 @@ public class PostgreSqlDatasourceTypeHandler implements DatasourceTypeHandler {
 			String[] parts = databaseName.split("\\|");
 			return parts.length > 1 ? parts[1] : parts[0];
 		}
-		return databaseName;
+		// PostgreSQL 默认 schema 是 public
+		return "public";
 	}
 
 }

@@ -24,6 +24,7 @@ import com.alibaba.cloud.ai.dataagent.dto.knowledge.businessknowledge.CreateBusi
 import com.alibaba.cloud.ai.dataagent.dto.knowledge.businessknowledge.UpdateBusinessKnowledgeDTO;
 import com.alibaba.cloud.ai.dataagent.entity.BusinessKnowledge;
 import com.alibaba.cloud.ai.dataagent.mapper.BusinessKnowledgeMapper;
+import com.alibaba.cloud.ai.dataagent.service.aimodelconfig.AiModelRegistry;
 import com.alibaba.cloud.ai.dataagent.service.vectorstore.AgentVectorStoreService;
 import com.alibaba.cloud.ai.dataagent.vo.BusinessKnowledgeVO;
 import lombok.AllArgsConstructor;
@@ -49,6 +50,8 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
 	private final AgentVectorStoreService agentVectorStoreService;
 
 	private final BusinessKnowledgeConverter businessKnowledgeConverter;
+
+	private final AiModelRegistry aiModelRegistry;
 
 	@Override
 	public List<BusinessKnowledgeVO> getKnowledge(Long agentId) {
@@ -212,6 +215,11 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
 
 	@Override
 	public void refreshAllKnowledgeToVectorStore(String agentId) throws Exception {
+		// 验证嵌入模型是否已配置
+		if (isDummyEmbeddingModel()) {
+			throw new IllegalStateException("No active EMBEDDING model configured. Please configure it in the dashboard first.");
+		}
+
 		agentVectorStoreService.deleteDocumentsByVectorType(agentId, DocumentMetadataConstant.BUSINESS_TERM);
 
 		// 获取所有 isRecall 等于 1 且未逻辑删除的 BusinessKnowledge
@@ -229,6 +237,15 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
 				.toList();
 			agentVectorStoreService.addDocuments(agentId, documents);
 		}
+	}
+
+	/**
+	 * 检查当前使用的是否是 DummyEmbeddingModel
+	 * @return true 如果是 DummyEmbeddingModel，false 否则
+	 */
+	private boolean isDummyEmbeddingModel() {
+		String className = aiModelRegistry.getEmbeddingModel().getClass().getSimpleName();
+		return className.equals("DummyEmbeddingModel");
 	}
 
 	@Override

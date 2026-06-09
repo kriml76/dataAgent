@@ -1,0 +1,621 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "Spring AI Alibaba DataAgent",
+    "description": "基于 Spring AI Alibaba Graph 的企业级智能数据分析 Agent，支持 Text-to-SQL、Python 深度分析、智能报告生成、MCP 服务器和 RAG 检索增强",
+    "languages": ["Java", "TypeScript", "Vue.js", "JavaScript", "SQL", "Shell", "XML", "YAML"],
+    "frameworks": ["Spring Boot", "Spring AI", "Vue.js 3", "Element Plus", "ECharts", "StateGraph"],
+    "analyzedAt": "2026-06-03T00:00:00.000Z",
+    "gitCommitHash": "599c131031bc5e801820054dbb35eceea4817b88",
+    "outputLanguage": "zh"
+  },
+  "nodes": [
+    {
+      "id": "file:pom.xml",
+      "type": "config",
+      "name": "pom.xml",
+      "filePath": "pom.xml",
+      "summary": "Maven 项目根配置文件，定义了 Spring AI Alibaba DataAgent 的模块结构和依赖管理",
+      "tags": ["Maven", "依赖管理", "项目配置"]
+    },
+    {
+      "id": "file:data-agent-management/pom.xml",
+      "type": "config",
+      "name": "data-agent-management/pom.xml",
+      "filePath": "data-agent-management/pom.xml",
+      "summary": "后端管理服务 Maven 配置文件，包含 Spring Boot、Spring AI Alibaba、MyBatis 等核心依赖",
+      "tags": ["Maven", "后端配置", "依赖管理"]
+    },
+    {
+      "id": "file:data-agent-frontend/package.json",
+      "type": "config",
+      "name": "data-agent-frontend/package.json",
+      "filePath": "data-agent-frontend/package.json",
+      "summary": "前端项目配置文件，定义了 Vue.js 3、Element Plus、ECharts 等前端技术栈依赖",
+      "tags": ["npm", "前端配置", "Vue.js"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/DataAgentApplication.java",
+      "type": "class",
+      "name": "DataAgentApplication",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/DataAgentApplication.java",
+      "summary": "Spring Boot 应用主入口类，负责启动整个 DataAgent 服务",
+      "tags": ["Spring Boot", "应用入口", "启动类"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/config/DataAgentConfiguration.java",
+      "type": "class",
+      "name": "DataAgentConfiguration",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/config/DataAgentConfiguration.java",
+      "summary": "核心配置类，负责构建 StateGraph 工作流，定义所有工作流节点和边的关系",
+      "tags": ["配置", "StateGraph", "工作流"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/controller/GraphController.java",
+      "type": "class",
+      "name": "GraphController",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/controller/GraphController.java",
+      "summary": "图工作流 API 控制器，提供 SSE 流式接口用于实时处理 NL2SQL 和数据分析请求",
+      "tags": ["REST API", "SSE", "流式处理", "控制器"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/graph/GraphService.java",
+      "type": "interface",
+      "name": "GraphService",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/graph/GraphService.java",
+      "summary": "图工作流服务接口，定义自然语言转 SQL 和流式处理的核心方法",
+      "tags": ["服务接口", "NL2SQL", "流式处理"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/graph/GraphServiceImpl.java",
+      "type": "class",
+      "name": "GraphServiceImpl",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/graph/GraphServiceImpl.java",
+      "summary": "图工作流服务实现类，集成 CompiledGraph、MultiTurnContextManager 和 Langfuse 追踪，处理流式事件和人工反馈",
+      "tags": ["服务实现", "工作流", "流式处理", "追踪"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/graph/Context/MultiTurnContextManager.java",
+      "type": "class",
+      "name": "MultiTurnContextManager",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/graph/Context/MultiTurnContextManager.java",
+      "summary": "多轮对话上下文管理器，负责构建和存储多轮对话历史，支持上下文累积和计划重放",
+      "tags": ["上下文管理", "多轮对话", "会话管理"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/llm/LlmService.java",
+      "type": "interface",
+      "name": "LlmService",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/llm/LlmService.java",
+      "summary": "LLM 服务接口，定义调用语言模型的核心方法，支持系统提示、用户提示和流式响应",
+      "tags": ["LLM", "接口", "语言模型"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/llm/impls/StreamLlmService.java",
+      "type": "class",
+      "name": "StreamLlmService",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/llm/impls/StreamLlmService.java",
+      "summary": "流式 LLM 服务实现，通过 AiModelRegistry 获取 ChatClient 并返回 Flux 流式响应",
+      "tags": ["LLM", "流式", "服务实现"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/aimodelconfig/AiModelRegistry.java",
+      "type": "class",
+      "name": "AiModelRegistry",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/aimodelconfig/AiModelRegistry.java",
+      "summary": "AI 模型注册中心，管理和缓存当前激活的 ChatClient 和 EmbeddingModel，支持运行时动态切换模型",
+      "tags": ["模型管理", "注册中心", "动态切换"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/aimodelconfig/ModelConfigOpsService.java",
+      "type": "class",
+      "name": "ModelConfigOpsService",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/aimodelconfig/ModelConfigOpsService.java",
+      "summary": "模型配置操作服务，提供模型的激活、切换、添加、更新和删除功能",
+      "tags": ["模型配置", "CRUD", "服务"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/vectorstore/AgentVectorStoreService.java",
+      "type": "interface",
+      "name": "AgentVectorStoreService",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/vectorstore/AgentVectorStoreService.java",
+      "summary": "向量存储服务接口，提供文档向量化和语义检索能力，支持 RAG 检索增强",
+      "tags": ["向量存储", "RAG", "检索"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/vectorstore/AgentVectorStoreServiceImpl.java",
+      "type": "class",
+      "name": "AgentVectorStoreServiceImpl",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/vectorstore/AgentVectorStoreServiceImpl.java",
+      "summary": "向量存储服务实现，集成混合检索策略，支持向量搜索和关键词搜索的结果融合",
+      "tags": ["向量存储", "RAG", "混合检索"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/hybrid/retrieval/AbstractHybridRetrievalStrategy.java",
+      "type": "class",
+      "name": "AbstractHybridRetrievalStrategy",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/hybrid/retrieval/AbstractHybridRetrievalStrategy.java",
+      "summary": "混合检索策略抽象类，模板方法实现向量搜索和关键词搜索的异步并行执行和结果融合",
+      "tags": ["混合检索", "向量搜索", "关键词搜索"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/hybrid/retrieval/impl/ElasticsearchHybridRetrievalStrategy.java",
+      "type": "class",
+      "name": "ElasticsearchHybridRetrievalStrategy",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/hybrid/retrieval/impl/ElasticsearchHybridRetrievalStrategy.java",
+      "summary": "Elasticsearch 混合检索策略实现，支持基于 Elasticsearch 的关键词全文搜索",
+      "tags": ["Elasticsearch", "混合检索", "全文搜索"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/mcp/McpServerService.java",
+      "type": "class",
+      "name": "McpServerService",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/mcp/McpServerService.java",
+      "summary": "MCP 服务器服务，提供 nl2SqlToolCallback 和 listAgentsToolCallback 两个核心工具",
+      "tags": ["MCP", "工具服务", "NL2SQL"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/config/McpServerConfig.java",
+      "type": "class",
+      "name": "McpServerConfig",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/config/McpServerConfig.java",
+      "summary": "MCP 服务器配置，通过 MethodToolCallbackProvider 注册 MCP 工具到 Spring AI",
+      "tags": ["MCP", "配置", "工具注册"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/code/impls/DockerCodePoolExecutorService.java",
+      "type": "class",
+      "name": "DockerCodePoolExecutorService",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/code/impls/DockerCodePoolExecutorService.java",
+      "summary": "Docker 代码执行器服务，使用 Docker 容器池执行 Python 代码，支持本地和远程 Docker 连接",
+      "tags": ["Docker", "代码执行", "Python", "容器化"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/connector/SqlExecutor.java",
+      "type": "class",
+      "name": "SqlExecutor",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/connector/SqlExecutor.java",
+      "summary": "SQL 执行器，封装数据库连接和查询执行逻辑，支持多种数据库方言",
+      "tags": ["SQL", "数据库", "执行器"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/langfuse/LangfuseService.java",
+      "type": "class",
+      "name": "LangfuseService",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/langfuse/LangfuseService.java",
+      "summary": "基于 OpenTelemetry 的 Langfuse 追踪服务，用于追踪 LLM 调用和生成调试信息",
+      "tags": ["追踪", "OpenTelemetry", "Langfuse"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/controller/AgentController.java",
+      "type": "class",
+      "name": "AgentController",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/controller/AgentController.java",
+      "summary": "智能体管理控制器，提供智能体的 CRUD 操作和 API Key 管理功能",
+      "tags": ["REST API", "智能体", "API Key"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/controller/ModelConfigController.java",
+      "type": "class",
+      "name": "ModelConfigController",
+      "filePath": "data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/controller/ModelConfigController.java",
+      "summary": "模型配置控制器，提供模型配置的查询、激活、添加、更新和删除接口",
+      "tags": ["REST API", "模型配置", "LLM"]
+    },
+    {
+      "id": "file:data-agent-frontend/src/main.js",
+      "type": "file",
+      "name": "main.js",
+      "filePath": "data-agent-frontend/src/main.js",
+      "summary": "Vue.js 应用入口文件，负责初始化 Vue 应用、路由和 Element Plus 组件库",
+      "tags": ["Vue.js", "前端入口", "应用启动"]
+    },
+    {
+      "id": "file:data-agent-frontend/src/App.vue",
+      "type": "file",
+      "name": "App.vue",
+      "filePath": "data-agent-frontend/src/App.vue",
+      "summary": "Vue.js 根组件，应用的最顶层组件，负责全局布局和路由视图渲染",
+      "tags": ["Vue.js", "根组件", "布局"]
+    },
+    {
+      "id": "file:data-agent-frontend/src/views/AgentRun.vue",
+      "type": "file",
+      "name": "AgentRun.vue",
+      "filePath": "data-agent-frontend/src/views/AgentRun.vue",
+      "summary": "智能体运行视图，核心对话界面，支持流式响应、结果集展示、报告生成和人工反馈",
+      "tags": ["Vue.js", "对话界面", "流式处理"]
+    },
+    {
+      "id": "file:data-agent-frontend/src/views/AgentList.vue",
+      "type": "file",
+      "name": "AgentList.vue",
+      "filePath": "data-agent-frontend/src/views/AgentList.vue",
+      "summary": "智能体列表视图，展示所有智能体，支持创建、编辑和删除智能体",
+      "tags": ["Vue.js", "智能体管理", "列表"]
+    },
+    {
+      "id": "file:data-agent-frontend/src/views/AgentDetail.vue",
+      "type": "file",
+      "name": "AgentDetail.vue",
+      "filePath": "data-agent-frontend/src/views/AgentDetail.vue",
+      "summary": "智能体详情视图，配置智能体的数据源、知识库、语义模型等",
+      "tags": ["Vue.js", "智能体配置", "详情"]
+    },
+    {
+      "id": "file:data-agent-frontend/src/components/run/ResultSetDisplay.vue",
+      "type": "file",
+      "name": "ResultSetDisplay.vue",
+      "filePath": "data-agent-frontend/src/components/run/ResultSetDisplay.vue",
+      "summary": "结果集展示组件，支持表格、图表等多种展示方式，支持分页和自定义显示配置",
+      "tags": ["Vue.js", "数据展示", "ECharts"]
+    },
+    {
+      "id": "file:data-agent-frontend/src/components/run/HumanFeedback.vue",
+      "type": "file",
+      "name": "HumanFeedback.vue",
+      "filePath": "data-agent-frontend/src/components/run/HumanFeedback.vue",
+      "summary": "人工反馈组件，支持在计划生成阶段进行人工干预和调整",
+      "tags": ["Vue.js", "Human-in-the-loop", "反馈"]
+    },
+    {
+      "id": "file:data-agent-frontend/src/components/run/charts/ChartFactory.ts",
+      "type": "file",
+      "name": "ChartFactory.ts",
+      "filePath": "data-agent-frontend/src/components/run/charts/ChartFactory.ts",
+      "summary": "图表工厂类，根据数据类型自动选择合适的图表类型（柱状图、折线图、饼图等）",
+      "tags": ["TypeScript", "ECharts", "图表工厂"]
+    },
+    {
+      "id": "file:data-agent-frontend/src/services/graph.ts",
+      "type": "file",
+      "name": "graph.ts",
+      "filePath": "data-agent-frontend/src/services/graph.ts",
+      "summary": "图工作流前端服务，封装 SSE 流式请求，支持实时接收工作流节点输出",
+      "tags": ["TypeScript", "SSE", "前端服务"]
+    },
+    {
+      "id": "file:data-agent-frontend/src/services/chat.ts",
+      "type": "file",
+      "name": "chat.ts",
+      "filePath": "data-agent-frontend/src/services/chat.ts",
+      "summary": "聊天会话前端服务，管理会话创建、消息保存和会话历史",
+      "tags": ["TypeScript", "会话管理", "前端服务"]
+    },
+    {
+      "id": "file:data-agent-management/src/main/resources/application.yml",
+      "type": "config",
+      "name": "application.yml",
+      "filePath": "data-agent-management/src/main/resources/application.yml",
+      "summary": "Spring Boot 应用配置文件，包含数据库、向量存储、LLM 等核心配置项",
+      "tags": ["配置", "Spring Boot", "YAML"]
+    },
+    {
+      "id": "file:data-agent-frontend/vite.config.js",
+      "type": "config",
+      "name": "vite.config.js",
+      "filePath": "data-agent-frontend/vite.config.js",
+      "summary": "Vite 构建工具配置文件，定义开发服务器和构建选项",
+      "tags": ["Vite", "前端构建", "配置"]
+    },
+    {
+      "id": "file:docs/ARCHITECTURE.md",
+      "type": "document",
+      "name": "架构设计文档",
+      "filePath": "docs/ARCHITECTURE.md",
+      "summary": "系统架构设计文档，详细介绍了 StateGraph 工作流、核心模块和运行时流程",
+      "tags": ["文档", "架构设计", "Mermaid 图"]
+    },
+    {
+      "id": "file:docs/QUICK_START.md",
+      "type": "document",
+      "name": "快速开始文档",
+      "filePath": "docs/QUICK_START.md",
+      "summary": "项目快速开始指南，包含环境准备、数据库导入、服务启动步骤",
+      "tags": ["文档", "快速开始", "部署"]
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/config/DataAgentConfiguration.java",
+      "target": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/controller/GraphController.java",
+      "type": "configures",
+      "direction": "directed",
+      "weight": 0.8
+    },
+    {
+      "source": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/controller/GraphController.java",
+      "target": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/graph/GraphService.java",
+      "type": "imports",
+      "direction": "directed",
+      "weight": 0.9
+    },
+    {
+      "source": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/graph/GraphServiceImpl.java",
+      "target": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/llm/LlmService.java",
+      "type": "imports",
+      "direction": "directed",
+      "weight": 0.8
+    },
+    {
+      "source": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/llm/impls/StreamLlmService.java",
+      "target": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/aimodelconfig/AiModelRegistry.java",
+      "type": "imports",
+      "direction": "directed",
+      "weight": 0.8
+    },
+    {
+      "source": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/vectorstore/AgentVectorStoreServiceImpl.java",
+      "target": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/hybrid/retrieval/AbstractHybridRetrievalStrategy.java",
+      "type": "imports",
+      "direction": "directed",
+      "weight": 0.7
+    },
+    {
+      "source": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/config/McpServerConfig.java",
+      "target": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/mcp/McpServerService.java",
+      "type": "configures",
+      "direction": "directed",
+      "weight": 0.8
+    },
+    {
+      "source": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/mcp/McpServerService.java",
+      "target": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/graph/GraphService.java",
+      "type": "calls",
+      "direction": "directed",
+      "weight": 0.8
+    },
+    {
+      "source": "file:data-agent-frontend/src/main.js",
+      "target": "file:data-agent-frontend/src/App.vue",
+      "type": "contains",
+      "direction": "directed",
+      "weight": 1.0
+    },
+    {
+      "source": "file:data-agent-frontend/src/App.vue",
+      "target": "file:data-agent-frontend/src/views/AgentRun.vue",
+      "type": "contains",
+      "direction": "directed",
+      "weight": 1.0
+    },
+    {
+      "source": "file:data-agent-frontend/src/App.vue",
+      "target": "file:data-agent-frontend/src/views/AgentList.vue",
+      "type": "contains",
+      "direction": "directed",
+      "weight": 1.0
+    },
+    {
+      "source": "file:data-agent-frontend/src/App.vue",
+      "target": "file:data-agent-frontend/src/views/AgentDetail.vue",
+      "type": "contains",
+      "direction": "directed",
+      "weight": 1.0
+    },
+    {
+      "source": "file:data-agent-frontend/src/views/AgentRun.vue",
+      "target": "file:data-agent-frontend/src/components/run/ResultSetDisplay.vue",
+      "type": "contains",
+      "direction": "directed",
+      "weight": 1.0
+    },
+    {
+      "source": "file:data-agent-frontend/src/views/AgentRun.vue",
+      "target": "file:data-agent-frontend/src/components/run/HumanFeedback.vue",
+      "type": "contains",
+      "direction": "directed",
+      "weight": 1.0
+    },
+    {
+      "source": "file:data-agent-frontend/src/views/AgentRun.vue",
+      "target": "file:data-agent-frontend/src/services/graph.ts",
+      "type": "imports",
+      "direction": "directed",
+      "weight": 0.8
+    },
+    {
+      "source": "file:data-agent-frontend/src/views/AgentRun.vue",
+      "target": "file:data-agent-frontend/src/services/chat.ts",
+      "type": "imports",
+      "direction": "directed",
+      "weight": 0.8
+    },
+    {
+      "source": "file:data-agent-frontend/src/components/run/ResultSetDisplay.vue",
+      "target": "file:data-agent-frontend/src/components/run/charts/ChartFactory.ts",
+      "type": "imports",
+      "direction": "directed",
+      "weight": 0.7
+    },
+    {
+      "source": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/aimodelconfig/ModelConfigOpsService.java",
+      "target": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/aimodelconfig/AiModelRegistry.java",
+      "type": "imports",
+      "direction": "directed",
+      "weight": 0.8
+    },
+    {
+      "source": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/controller/ModelConfigController.java",
+      "target": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/aimodelconfig/ModelConfigOpsService.java",
+      "type": "imports",
+      "direction": "directed",
+      "weight": 0.8
+    },
+    {
+      "source": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/connector/SqlExecutor.java",
+      "target": "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/code/impls/DockerCodePoolExecutorService.java",
+      "type": "related",
+      "direction": "undirected",
+      "weight": 0.5
+    }
+  ],
+  "layers": [
+    {
+      "id": "layer:前端展示层",
+      "name": "前端展示层",
+      "description": "Vue.js 3 + Element Plus 构建的用户界面，包含智能体管理、对话运行、数据可视化等视图和组件",
+      "nodeIds": [
+        "file:data-agent-frontend/src/main.js",
+        "file:data-agent-frontend/src/App.vue",
+        "file:data-agent-frontend/src/views/AgentRun.vue",
+        "file:data-agent-frontend/src/views/AgentList.vue",
+        "file:data-agent-frontend/src/views/AgentDetail.vue",
+        "file:data-agent-frontend/src/components/run/ResultSetDisplay.vue",
+        "file:data-agent-frontend/src/components/run/HumanFeedback.vue",
+        "file:data-agent-frontend/src/components/run/charts/ChartFactory.ts",
+        "file:data-agent-frontend/src/services/graph.ts",
+        "file:data-agent-frontend/src/services/chat.ts",
+        "file:data-agent-frontend/vite.config.js"
+      ]
+    },
+    {
+      "id": "layer:后端控制器层",
+      "name": "后端控制器层",
+      "description": "Spring Boot REST API 控制器，处理前端请求并返回响应，包含 GraphController、AgentController、ModelConfigController 等",
+      "nodeIds": [
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/controller/GraphController.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/controller/AgentController.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/controller/ModelConfigController.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/DataAgentApplication.java"
+      ]
+    },
+    {
+      "id": "layer:工作流服务层",
+      "name": "工作流服务层",
+      "description": "核心业务逻辑层，包含 StateGraph 工作流、LLM 服务、向量存储等核心服务",
+      "nodeIds": [
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/graph/GraphService.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/graph/GraphServiceImpl.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/graph/Context/MultiTurnContextManager.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/llm/LlmService.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/llm/impls/StreamLlmService.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/vectorstore/AgentVectorStoreService.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/vectorstore/AgentVectorStoreServiceImpl.java"
+      ]
+    },
+    {
+      "id": "layer:模型管理层",
+      "name": "模型管理层",
+      "description": "AI 模型配置和管理，负责模型注册、动态切换和配置持久化",
+      "nodeIds": [
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/aimodelconfig/AiModelRegistry.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/aimodelconfig/ModelConfigOpsService.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/controller/ModelConfigController.java"
+      ]
+    },
+    {
+      "id": "layer:数据层",
+      "name": "数据层",
+      "description": "数据访问层，包含 SQL 执行器、向量存储和各种 Mapper 接口",
+      "nodeIds": [
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/connector/SqlExecutor.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/vectorstore/AgentVectorStoreServiceImpl.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/hybrid/retrieval/AbstractHybridRetrievalStrategy.java"
+      ]
+    },
+    {
+      "id": "layer:配置层",
+      "name": "配置层",
+      "description": "系统配置和基础设施，包含 StateGraph 配置、MCP 服务器配置、代码执行器配置等",
+      "nodeIds": [
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/config/DataAgentConfiguration.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/config/McpServerConfig.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/code/impls/DockerCodePoolExecutorService.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/mcp/McpServerService.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/langfuse/LangfuseService.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/hybrid/retrieval/impl/ElasticsearchHybridRetrievalStrategy.java"
+      ]
+    },
+    {
+      "id": "layer:文档",
+      "name": "文档",
+      "description": "项目文档和配置文件",
+      "nodeIds": [
+        "file:docs/ARCHITECTURE.md",
+        "file:docs/QUICK_START.md",
+        "file:pom.xml",
+        "file:data-agent-management/pom.xml",
+        "file:data-agent-frontend/package.json",
+        "file:data-agent-management/src/main/resources/application.yml"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "order": 1,
+      "title": "项目概述",
+      "description": "DataAgent 是基于 Spring AI Alibaba Graph 的企业级智能数据分析 Agent，支持自然语言转 SQL、Python 深度分析和智能报告生成",
+      "nodeIds": [
+        "file:docs/ARCHITECTURE.md",
+        "file:pom.xml"
+      ]
+    },
+    {
+      "order": 2,
+      "title": "后端应用入口",
+      "description": "Spring Boot 应用主入口，负责启动整个服务并加载配置",
+      "nodeIds": [
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/DataAgentApplication.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/config/DataAgentConfiguration.java"
+      ]
+    },
+    {
+      "order": 3,
+      "title": "核心工作流服务",
+      "description": "GraphService 实现类集成 CompiledGraph、MultiTurnContextManager 和 Langfuse 追踪，处理流式事件和人工反馈",
+      "nodeIds": [
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/graph/GraphServiceImpl.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/graph/Context/MultiTurnContextManager.java"
+      ]
+    },
+    {
+      "order": 4,
+      "title": "LLM 服务层",
+      "description": "LlmService 通过 AiModelRegistry 动态获取 ChatClient，支持流式和阻塞两种调用模式",
+      "nodeIds": [
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/llm/LlmService.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/llm/impls/StreamLlmService.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/aimodelconfig/AiModelRegistry.java"
+      ]
+    },
+    {
+      "order": 5,
+      "title": "RAG 检索增强",
+      "description": "向量存储服务支持混合检索，结合向量搜索和关键词搜索提升检索准确性",
+      "nodeIds": [
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/vectorstore/AgentVectorStoreServiceImpl.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/hybrid/retrieval/AbstractHybridRetrievalStrategy.java"
+      ]
+    },
+    {
+      "order": 6,
+      "title": "MCP 服务器",
+      "description": "MCP 服务器提供服务化工具，支持 nl2SqlToolCallback 和 listAgentsToolCallback",
+      "nodeIds": [
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/service/mcp/McpServerService.java",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/config/McpServerConfig.java"
+      ]
+    },
+    {
+      "order": 7,
+      "title": "前端对话界面",
+      "description": "AgentRun.vue 是核心对话界面，支持流式响应、结果集展示、图表渲染和人工反馈",
+      "nodeIds": [
+        "file:data-agent-frontend/src/views/AgentRun.vue",
+        "file:data-agent-frontend/src/components/run/ResultSetDisplay.vue",
+        "file:data-agent-frontend/src/components/run/HumanFeedback.vue"
+      ]
+    },
+    {
+      "order": 8,
+      "title": "前端服务层",
+      "description": "前端服务封装 SSE 流式请求和会话管理，与后端 GraphController 交互",
+      "nodeIds": [
+        "file:data-agent-frontend/src/services/graph.ts",
+        "file:data-agent-frontend/src/services/chat.ts",
+        "file:data-agent-management/src/main/java/com/alibaba/cloud/ai/dataagent/controller/GraphController.java"
+      ]
+    }
+  ]
+}

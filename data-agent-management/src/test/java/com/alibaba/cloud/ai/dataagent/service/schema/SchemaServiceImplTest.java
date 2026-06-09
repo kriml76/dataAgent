@@ -245,7 +245,7 @@ class SchemaServiceImplTest {
 	void extractDatabaseName_postgresql() {
 		SchemaDTO schemaDTO = new SchemaDTO();
 		DbConfigBO dbConfig = new DbConfigBO();
-		dbConfig.setUrl("jdbc:postgresql://localhost:5432/mydb");
+		dbConfig.setUrl("jdbc:postgresql://localhost:5433/mydb");
 		dbConfig.setDialectType("postgresql");
 		dbConfig.setSchema("public");
 

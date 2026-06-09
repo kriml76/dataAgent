@@ -37,10 +37,10 @@ services:
     container_name: data-agent-postgres-datasource
     restart: always
     ports:
-      - "15432:5432"
+      - "15432:5433"
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: admin123456
     volumes:
       - ./config/postgres:/docker-entrypoint-initdb.d
     healthcheck:
