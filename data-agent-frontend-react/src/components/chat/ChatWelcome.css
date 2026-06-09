@@ -1,0 +1,50 @@
+.welcome-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.agent-avatar-wrap {
+  margin-bottom: 24px;
+}
+
+.agent-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-size: cover;
+  background-position: center;
+}
+
+.agent-avatar-emoji {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.welcome-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 12px;
+  letter-spacing: -0.3px;
+}
+
+.agent-name {
+  color: #1e293b;
+}
+
+.welcome-desc {
+  font-size: 14.5px;
+  color: #64748b;
+  max-width: 480px;
+  line-height: 1.7;
+}

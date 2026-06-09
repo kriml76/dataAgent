@@ -1,30 +1,44 @@
-/*
- * Copyright 2026 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-import { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  SendOutlined,
+  StopOutlined,
+  DatabaseOutlined,
+  ThunderboltOutlined,
+  CheckOutlined,
+  CloseOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
 import { useChatStore } from '@/stores/chat';
-import { Button, Input, Space, Dropdown } from 'antd';
-import type { MenuProps } from 'antd';
-import { SendOutlined, StopOutlined, DatabaseOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import './ChatInputArea.css';
 
-const ChatInputArea = () => {
+const ChatInputArea: React.FC = () => {
   const store = useChatStore();
   const [inputText, setInputText] = useState('');
   const [showDsMenu, setShowDsMenu] = useState(false);
   const [showModelMenu, setShowModelMenu] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowDsMenu(false);
+        setShowModelMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Auto resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+    }
+  }, [inputText]);
 
   const handleSend = async () => {
     const query = inputText.trim();
@@ -53,46 +67,29 @@ const ChatInputArea = () => {
     }
   };
 
-  const dsMenuItems: MenuProps['items'] = store.allDatasources.map((ds: any) => ({
-    key: ds.id,
-    label: (
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span>{ds.name}</span>
-        <span style={{ fontSize: 11, color: '#94a3b8' }}>{ds.type?.toUpperCase()}</span>
-      </div>
-    ),
-    onClick: () => {
-      setShowDsMenu(false);
-      store.switchDatasource(ds);
-    },
-  }));
+  const selectDs = async (ds: any) => {
+    setShowDsMenu(false);
+    await store.switchDatasource(ds);
+  };
 
-  const modelMenuItems: MenuProps['items'] = store.chatModels.map((m: any) => ({
-    key: m.id,
-    label: (
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span>{m.modelName}</span>
-        <span style={{ fontSize: 11, color: '#94a3b8' }}>{m.provider}</span>
-      </div>
-    ),
-    onClick: () => {
-      setShowModelMenu(false);
-      store.switchModel(m.id);
-    },
-  }));
+  const selectModel = async (m: any) => {
+    setShowModelMenu(false);
+    if (m.id !== undefined) await store.switchModel(m.id);
+  };
+
+  const handleNl2sqlChange = () => {
+    if (store.requestOptions.nl2sqlOnly) {
+      store.requestOptions.humanFeedback = false;
+    }
+  };
 
   return (
-    <div className="input-area">
+    <div className="input-area" ref={menuRef}>
       {/* Status bar */}
       <div className="status-bar">
         <div className="status-chips">
           {/* Datasource selector */}
-          <Dropdown
-            menu={{ items: dsMenuItems }}
-            trigger={['click']}
-            open={showDsMenu}
-            onOpenChange={(open) => !store.isStreaming && setShowDsMenu(open)}
-          >
+          <div className="ds-chip-wrap">
             <div
               className={`status-chip status-chip--ds ${store.isStreaming ? 'disabled' : ''}`}
               onClick={() => !store.isStreaming && setShowDsMenu(!showDsMenu)}
@@ -100,44 +97,61 @@ const ChatInputArea = () => {
               <DatabaseOutlined style={{ fontSize: 13, color: '#64748b' }} />
               <span>{store.activeDatasource?.name || '选择数据库'}</span>
             </div>
-          </Dropdown>
+            {showDsMenu && (
+              <div className="chip-dropdown">
+                {store.allDatasources.map((ds: any) => (
+                  <div
+                    key={ds.id}
+                    className={`chip-dropdown-item ${store.activeDatasource?.id === ds.id ? 'active' : ''}`}
+                    onClick={() => selectDs(ds)}
+                  >
+                    <span className="item-name">{ds.name}</span>
+                    <span className="item-tag">{ds.type?.toUpperCase()}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Model selector */}
-          <Dropdown
-            menu={{ items: modelMenuItems }}
-            trigger={['click']}
-            open={showModelMenu}
-            onOpenChange={(open) =>
-              !store.isStreaming && store.chatModels.length > 0 && setShowModelMenu(open)
-            }
-          >
+          <div className="ds-chip-wrap">
             <div
               className={`status-chip status-chip--model ${
                 store.isStreaming || store.chatModels.length === 0 ? 'disabled' : ''
               }`}
-              onClick={() =>
-                !store.isStreaming &&
-                store.chatModels.length > 0 &&
-                setShowModelMenu(!showModelMenu)
-              }
+              onClick={() => !store.isStreaming && store.chatModels.length > 0 && setShowModelMenu(!showModelMenu)}
             >
               <ThunderboltOutlined style={{ fontSize: 13, color: '#3b82f6' }} />
               <span>{store.activeModelConfig?.modelName || '选择AI模型'}</span>
             </div>
-          </Dropdown>
+            {showModelMenu && (
+              <div className="chip-dropdown">
+                {store.chatModels.map((m: any) => (
+                  <div
+                    key={m.id}
+                    className={`chip-dropdown-item ${store.activeModelConfig?.id === m.id ? 'active' : ''}`}
+                    onClick={() => selectModel(m)}
+                  >
+                    <span className="item-name">{m.modelName}</span>
+                    <span className="item-tag">{m.provider}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Textarea */}
       <div className="textarea-wrap">
-        <Input.TextArea
+        <textarea
+          ref={textareaRef}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={store.isStreaming || store.showHumanFeedback}
           placeholder="在这里提问，例如：'分析上月各产品的销售增长情况'..."
           rows={3}
-          autoSize={{ minRows: 3, maxRows: 10 }}
           className="chat-textarea"
         />
       </div>
@@ -145,63 +159,65 @@ const ChatInputArea = () => {
       {/* Action bar */}
       <div className="action-bar">
         <div className="action-bar-left">
-          <Space size="small">
-            <Button
-              size="small"
-              type={store.requestOptions.humanFeedback ? 'primary' : 'default'}
-              disabled={store.requestOptions.nl2sqlOnly || store.isStreaming}
-              onClick={() =>
-                store.requestOptions.humanFeedback = !store.requestOptions.humanFeedback
-              }
-            >
+          <div className="extra-options">
+            <label className={`option-chip ${store.requestOptions.humanFeedback ? 'active' : ''}`}>
+              <input
+                type="checkbox"
+                checked={store.requestOptions.humanFeedback}
+                disabled={store.requestOptions.nl2sqlOnly || store.isStreaming}
+                className="hidden-checkbox"
+                onChange={() => {
+                  store.requestOptions.humanFeedback = !store.requestOptions.humanFeedback;
+                }}
+              />
+              <CheckOutlined style={{ fontSize: 11 }} />
               人工反馈
-            </Button>
-            <Button
-              size="small"
-              type={store.requestOptions.nl2sqlOnly ? 'primary' : 'default'}
-              disabled={store.isStreaming}
-              onClick={() => {
-                store.requestOptions.nl2sqlOnly = !store.requestOptions.nl2sqlOnly;
-                if (store.requestOptions.nl2sqlOnly) {
-                  store.requestOptions.humanFeedback = false;
-                }
-              }}
-            >
+            </label>
+            <label className={`option-chip ${store.requestOptions.nl2sqlOnly ? 'active' : ''}`}>
+              <input
+                type="checkbox"
+                checked={store.requestOptions.nl2sqlOnly}
+                disabled={store.isStreaming}
+                className="hidden-checkbox"
+                onChange={() => {
+                  store.requestOptions.nl2sqlOnly = !store.requestOptions.nl2sqlOnly;
+                  handleNl2sqlChange();
+                }}
+              />
+              <DatabaseOutlined style={{ fontSize: 11 }} />
               仅NL2SQL
-            </Button>
-            <Button
-              size="small"
-              type={store.requestOptions.showSqlResults ? 'primary' : 'default'}
-              disabled={store.isStreaming}
-              onClick={() =>
-                store.requestOptions.showSqlResults = !store.requestOptions.showSqlResults
-              }
-            >
+            </label>
+            <label className={`option-chip ${store.requestOptions.showSqlResults ? 'active' : ''}`}>
+              <input
+                type="checkbox"
+                checked={store.requestOptions.showSqlResults}
+                disabled={store.isStreaming}
+                className="hidden-checkbox"
+                onChange={() => {
+                  store.requestOptions.showSqlResults = !store.requestOptions.showSqlResults;
+                }}
+              />
+              <DatabaseOutlined style={{ fontSize: 11 }} />
               显示SQL结果
-            </Button>
-          </Space>
+            </label>
+          </div>
         </div>
 
         <div className="action-bar-right">
           {!store.isStreaming ? (
-            <Button
-              type="primary"
-              icon={<SendOutlined />}
+            <button
+              className="send-btn"
               disabled={!inputText.trim() || store.showHumanFeedback}
               onClick={handleSend}
-              className="send-btn"
             >
               发送
-            </Button>
+              <SendOutlined style={{ marginLeft: 8, fontSize: 14 }} />
+            </button>
           ) : (
-            <Button
-              danger
-              icon={<StopOutlined />}
-              onClick={handleStop}
-              className="stop-btn"
-            >
+            <button className="stop-btn" onClick={handleStop}>
+              <StopOutlined style={{ marginRight: 8, fontSize: 14 }} />
               停止
-            </Button>
+            </button>
           )}
         </div>
       </div>
@@ -210,10 +226,10 @@ const ChatInputArea = () => {
       {store.showHumanFeedback && (
         <div className="human-feedback-panel">
           <div className="feedback-header">
-            <span style={{ marginRight: 4 }}>⚠️</span>
+            <ExclamationCircleOutlined style={{ marginRight: 8, color: '#f59e0b' }} />
             <span>请确认执行计划</span>
           </div>
-          <Input.TextArea
+          <textarea
             value={store.feedbackContent}
             onChange={(e) => (store.feedbackContent = e.target.value)}
             rows={2}
@@ -221,20 +237,20 @@ const ChatInputArea = () => {
             className="feedback-textarea"
           />
           <div className="feedback-actions">
-            <Button
-              type="primary"
-              onClick={() => store.submitFeedback(false, store.feedbackContent)}
+            <button
               className="feedback-btn feedback-btn--accept"
+              onClick={() => store.submitFeedback(false, store.feedbackContent)}
             >
-              ✓ 接受计划
-            </Button>
-            <Button
-              danger
-              onClick={() => store.submitFeedback(true, store.feedbackContent)}
+              <CheckOutlined style={{ marginRight: 4 }} />
+              接受计划
+            </button>
+            <button
               className="feedback-btn feedback-btn--reject"
+              onClick={() => store.submitFeedback(true, store.feedbackContent)}
             >
-              ✕ 拒绝重规划
-            </Button>
+              <CloseOutlined style={{ marginRight: 4 }} />
+              拒绝重规划
+            </button>
           </div>
         </div>
       )}

@@ -1,0 +1,357 @@
+/* ── Layout ──────────────────────────────────────────────────────────────────── */
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.messages-inner {
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* ── Row (shared by user + AI) ───────────────────────────────────────────────── */
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.user-row {
+  justify-content: flex-end;
+}
+
+.ai-row {
+  justify-content: flex-start;
+}
+
+/* ── Avatar ──────────────────────────────────────────────────────────────────── */
+.avatar {
+  flex-shrink: 0;
+  margin-top: 2px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+}
+
+.ai-row .avatar {
+  background: #3b82f6;
+}
+
+/* ── User card ───────────────────────────────────────────────────────────────── */
+.user-card {
+  background: #3b82f6 !important;
+  color: white !important;
+  padding: 10px 16px;
+  border-radius: 16px 16px 4px 16px;
+  font-size: 14px;
+  line-height: 1.65;
+  max-width: 60%;
+  word-break: break-word;
+}
+
+/* ── AI card ─────────────────────────────────────────────────────────────────── */
+.ai-card {
+  padding: 12px 16px;
+  border-radius: 4px 16px 16px 16px;
+  font-size: 14px;
+  line-height: 1.7;
+  width: 100%;
+  word-break: break-word;
+  color: #1e293b;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Report card: full width like markdown content */
+.report-card {
+  max-width: 100% !important;
+  padding: 16px !important;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Timeline card: full width, let timeline handle its own padding */
+.timeline-card {
+  padding: 12px 14px;
+  max-width: 100% !important;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+/* ── Thinking dots ───────────────────────────────────────────────────────────── */
+.thinking-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 2px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  background: #94a3b8;
+  border-radius: 50%;
+  animation: dotBounce 1.2s infinite;
+}
+
+.dot-2 {
+  animation-delay: 0.2s;
+}
+
+.dot-3 {
+  animation-delay: 0.4s;
+}
+
+@keyframes dotBounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-5px);
+  }
+}
+
+/* ── Markdown body inside AI card ────────────────────────────────────────────── */
+.md-body h1,
+.md-body h2,
+.md-body h3 {
+  font-weight: 700;
+  margin: 12px 0 5px;
+  line-height: 1.4;
+}
+
+.md-body p {
+  margin-bottom: 7px;
+}
+
+.md-body ul,
+.md-body ol {
+  padding-left: 18px;
+  margin-bottom: 7px;
+}
+
+.md-body code:not(pre code) {
+  background: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12.5px;
+  font-family: 'Monaco', 'Menlo', 'Fira Code', monospace;
+  color: #e83e8c;
+}
+
+.md-body blockquote {
+  border-left: 3px solid #3b82f6;
+  padding-left: 12px;
+  color: #64748b;
+  margin: 6px 0;
+  font-style: italic;
+}
+
+.md-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  display: block;
+  overflow-x: auto;
+}
+
+.md-body thead {
+  display: table-header-group;
+}
+
+.md-body tbody {
+  display: table-row-group;
+}
+
+.md-body tr {
+  display: table-row;
+  border-top: 1px solid #c6cbd1;
+}
+
+.md-body th {
+  display: table-cell;
+  background: #f1f5f9;
+  padding: 7px 12px;
+  border: 1px solid #e2e8f0;
+  font-weight: 600;
+  font-size: 13px;
+  text-align: left;
+}
+
+.md-body td {
+  display: table-cell;
+  padding: 7px 12px;
+  border: 1px solid #e2e8f0;
+  font-size: 13px;
+}
+
+.md-body tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.md-body a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.md-body hr {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 12px 0;
+}
+
+.md-body strong {
+  font-weight: 700;
+}
+
+/* ── Code block with header ─────────────────────────────────────────────────── */
+.md-body .code-block-wrapper {
+  margin: 10px 0;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  overflow: auto;
+  background: #f6f8fa;
+}
+
+.md-body .code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f6f8fa;
+  padding: 6px 10px;
+  border-bottom: 1px solid #e1e4e8;
+  font-size: 11px;
+}
+
+.md-body .code-language {
+  color: #6a737d;
+  font-weight: 600;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.md-body .code-copy-button {
+  background: transparent;
+  border: 1px solid #d1d5da;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #24292e;
+}
+
+.md-body .code-copy-button:hover {
+  background: #f3f4f6;
+  border-color: #c6cbd1;
+}
+
+.md-body .code-copy-button.copied {
+  background: #28a745;
+  border-color: #28a745;
+  color: white;
+}
+
+.md-body pre.hljs {
+  margin: 0;
+  padding: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: #f6f8fa;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre;
+}
+
+.md-body pre.hljs code {
+  display: block;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  font-family: 'Monaco', 'Menlo', monospace;
+  color: inherit;
+  white-space: pre;
+  min-width: max-content;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────────── */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ── Status banners (warning / error) ────────────────────────────────────────── */
+.status-banner {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  max-width: 75%;
+}
+
+.status-banner--warning {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+}
+
+.status-banner--error {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+}
+
+/* ── Streaming markdown cursor ──────────────────────────────────────────────── */
+.md-body.streaming > :last-child::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3b82f6;
+  margin-left: 3px;
+  vertical-align: middle;
+  animation: cursorDotBlink 0.7s step-end infinite;
+}
+
+@keyframes cursorDotBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
