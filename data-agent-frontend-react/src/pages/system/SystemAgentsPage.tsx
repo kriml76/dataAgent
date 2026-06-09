@@ -525,17 +525,13 @@ const SystemAgentsPage: React.FC = () => {
           </Form.Item>
 
           <Form.Item label="状态" name="status">
-            <Form.Item noStyle shouldUpdate>
-              {() => (
-                <Select
-                  options={[
-                    { label: '草稿', value: 'draft' },
-                    { label: '已发布', value: 'published' },
-                    { label: '已下线', value: 'offline' },
-                  ]}
-                />
-              )}
-            </Form.Item>
+            <Select
+              options={[
+                { label: '草稿', value: 'draft' },
+                { label: '已发布', value: 'published' },
+                { label: '已下线', value: 'offline' },
+              ]}
+            />
           </Form.Item>
         </Form>
       </Modal>
