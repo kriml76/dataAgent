@@ -341,4 +341,7 @@ export const useChatStore = create((set, get) => ({
     setChatSidebarCollapsed: (collapsed) => {
         set({ chatSidebarCollapsed: collapsed });
     },
+    setReportFormat: (format) => {
+        set({ reportFormat: format });
+    },
 }));

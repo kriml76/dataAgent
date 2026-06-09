@@ -109,14 +109,23 @@ const ChatMarkdownReport: React.FC<ChatMarkdownReportProps> = ({ content }) => {
     URL.revokeObjectURL(url);
   }, [content]);
 
-  const downloadHtml = useCallback(async () => {
+  const downloadHtml = useCallback(() => {
     if (!content) return;
     try {
-      await store.downloadHtmlReport(content);
+      const html = buildReportHtml(content);
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `report_${Date.now()}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (e) {
       console.error('下载HTML报告失败', e);
     }
-  }, [content, store]);
+  }, [content]);
 
   const handleCloseFullscreen = () => {
     store.openReportFullscreen('');

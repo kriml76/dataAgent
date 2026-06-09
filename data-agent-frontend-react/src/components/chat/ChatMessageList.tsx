@@ -7,6 +7,7 @@ import { useEchartsRenderer } from '@/hooks/useEchartsRenderer';
 import ChatWelcome from './ChatWelcome';
 import ChatResultSet, { type ResultData } from './ChatResultSet';
 import ChatWorkflowTimeline, { type GraphNodeResponse } from './ChatWorkflowTimeline';
+import ChatMarkdownReport from './ChatMarkdownReport';
 import './ChatMessageList.css';
 
 const TIMELINE_ABSORBED_TYPES = new Set(['result-set', 'markdown-report', 'html']);
@@ -135,7 +136,7 @@ const ChatMessageList: React.FC = () => {
       case 'markdown-report':
         return (
           <div className="ai-card report-card">
-            <div className="md-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }} />
+            <ChatMarkdownReport content={message.content} />
           </div>
         );
 
