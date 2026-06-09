@@ -183,6 +183,21 @@ const KnowledgeAgentsPage: React.FC = () => {
     }
   };
 
+  const getEmbeddingStatusLabel = (status?: string): string => {
+    switch (status) {
+      case 'COMPLETED':
+        return '已完成';
+      case 'PROCESSING':
+        return '处理中';
+      case 'FAILED':
+        return '失败';
+      case 'PENDING':
+        return '等待中';
+      default:
+        return status || '未知';
+    }
+  };
+
   const handleSearch = () => {
     setQueryParams(prev => ({ ...prev, pageNum: 1 }));
     loadData();
@@ -444,7 +459,7 @@ const KnowledgeAgentsPage: React.FC = () => {
             {embeddingStatus === 'FAILED' && <ReloadOutlined style={{ marginRight: 4 }} />}
             {embeddingStatus === 'COMPLETED' && <span style={{ marginRight: 4 }}>✓</span>}
             {embeddingStatus === 'PROCESSING' && <span style={{ marginRight: 4 }}>⟳</span>}
-            {embeddingStatus || '未知'}
+            {getEmbeddingStatusLabel(embeddingStatus)}
           </Tag>
           {embeddingStatus === 'FAILED' && record.errorMsg && (
             <Tooltip title={record.errorMsg}>
