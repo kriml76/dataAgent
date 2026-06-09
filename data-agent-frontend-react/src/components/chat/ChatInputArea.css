@@ -140,6 +140,7 @@
   font-family: inherit;
   min-height: 80px;
   max-height: 300px;
+  box-sizing: border-box;
 }
 
 .chat-textarea::placeholder {

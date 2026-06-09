@@ -11,7 +11,7 @@
 .sidebar-wrapper.collapsed {
   width: 0;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* ── Expanded panel ──────────────────────────────────────────────────────────── */
@@ -231,11 +231,11 @@
 /* ── Collapsed expand FAB ────────────────────────────────────────────────────── */
 .expand-fab {
   position: absolute;
-  top: 10px;
+  top: 80px;
   left: 8px;
-  z-index: 10;
-  width: 32px;
-  height: 32px;
+  z-index: 999;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;

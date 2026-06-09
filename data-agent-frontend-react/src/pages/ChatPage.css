@@ -17,6 +17,7 @@
   box-shadow: none;
   border: none;
   height: 100%;
+  position: relative;
 }
 
 .chat-messages-container {

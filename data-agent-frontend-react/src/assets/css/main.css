@@ -28,7 +28,7 @@ body {
   overflow: hidden;
   background: var(--color-cream);
   gap: 24px;
-  padding: 24px;
+  /* padding: 24px; */
 }
 
 .chat-sidebar {

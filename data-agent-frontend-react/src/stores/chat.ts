@@ -137,16 +137,21 @@ function getSessionState(sessionId: string): SessionState {
   return sessionStates.get(sessionId)!;
 }
 
-function syncStateToView(sessionId: string, state: any) {
+function syncStateToView(sessionId: string, set: any) {
   const sessionState = getSessionState(sessionId);
-  if (state.isStreaming) state.isStreaming.current = sessionState.isStreaming;
-  if (state.nodeBlocks) state.nodeBlocks.current = [...sessionState.nodeBlocks];
+  set({
+    isStreaming: sessionState.isStreaming,
+    nodeBlocks: [...sessionState.nodeBlocks],
+    streamingReportContent: sessionState.markdownReportContent,
+    isReportStreaming: sessionState.isStreaming && sessionState.markdownReportContent.length > 0,
+  });
 }
 
-function saveViewToState(sessionId: string, state: any) {
+function saveViewToState(sessionId: string, get: any) {
   const sessionState = getSessionState(sessionId);
-  if (state.isStreaming) sessionState.isStreaming = state.isStreaming.current;
-  if (state.nodeBlocks) sessionState.nodeBlocks = [...state.nodeBlocks.current];
+  sessionState.isStreaming = get().isStreaming;
+  sessionState.nodeBlocks = [...get().nodeBlocks];
+  sessionState.markdownReportContent = get().streamingReportContent;
 }
 
 function deleteSessionState(sessionId: string) {
@@ -232,22 +237,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     
     // Save current session state
     if (currentSession) {
-      saveViewToState(currentSession.id, {
-        isStreaming: { current: get().isStreaming },
-        nodeBlocks: { current: get().nodeBlocks },
-      });
+      saveViewToState(currentSession.id, get);
     }
 
     set({ currentSession });
     
     // Sync state to view
-    syncStateToView(session.id, {
-      isStreaming: { current: null as any },
-      nodeBlocks: { current: null as any },
-    });
+    syncStateToView(session.id, set);
 
     try {
       const messages = await chatService.getSessionMessages(session.id);
+      console.log('Loaded messages:', messages);
       set({ currentMessages: messages });
     } catch (error) {
       console.error('Failed to load messages:', error);
