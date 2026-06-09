@@ -27,6 +27,11 @@ import {
   ThunderboltOutlined,
   ScanOutlined,
   RadarChartOutlined,
+  ApiOutlined,
+  CodeSandboxOutlined,
+  FileTextOutlined,
+  SaveOutlined,
+  BranchesOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import agentService from '@/services/agent';
@@ -179,22 +184,20 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       key: 'knowledge',
       icon: <BookOutlined style={{ filter: 'drop-shadow(0 0 4px #00f5ff)' }} />,
       label: 'Knowledge Base',
-      type: 'group' as const,
       children: [
-        { key: '/knowledge/business', label: 'Business Lexicon' },
-        { key: '/knowledge/agents', label: 'Agent Memory' },
-        { key: '/knowledge/semantic-models', label: 'Semantic Schema' },
+        { key: '/knowledge/business', icon: <FileTextOutlined />, label: 'Business Lexicon' },
+        { key: '/knowledge/agents', icon: <SaveOutlined />, label: 'Agent Memory' },
+        { key: '/knowledge/semantic-models', icon: <BranchesOutlined />, label: 'Semantic Schema' },
       ],
     },
     {
       key: 'system',
       icon: <DatabaseOutlined style={{ filter: 'drop-shadow(0 0 4px #00f5ff)' }} />,
       label: 'Configuration',
-      type: 'group' as const,
       children: [
-        { key: '/system/agents', label: 'Agent Studio' },
-        { key: '/system/data-sources', label: 'Data Sources' },
-        { key: '/system/model-config', label: 'Model Registry' },
+        { key: '/system/agents', icon: <ApiOutlined />, label: 'Agent Studio' },
+        { key: '/system/data-sources', icon: <DatabaseOutlined />, label: 'Data Sources' },
+        { key: '/system/model-config', icon: <CodeSandboxOutlined />, label: 'Model Registry' },
       ],
     },
   ];
@@ -206,42 +209,50 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         collapsed={collapsed}
         onCollapse={setCollapsed}
         width={320}
+        collapsedWidth={80}
         theme="dark"
         style={{
           background: 'linear-gradient(180deg, #0d0d12 0%, #0a0a0f 100%)',
           borderRight: '1px solid rgba(0, 245, 255, 0.15)',
           boxShadow: 'inset -1px 0 20px rgba(0, 245, 255, 0.05)',
+          overflow: 'hidden',
         }}
       >
         <div style={{ 
-          padding: '20px', 
+          padding: collapsed ? '16px 8px' : '20px', 
           height: '100%', 
           display: 'flex', 
           flexDirection: 'column',
           position: 'relative',
+          transition: 'padding 0.3s ease',
         }}>
-          <CornerDecoration position="top-left" />
-          <CornerDecoration position="top-right" />
+          {!collapsed && (
+            <>
+              <CornerDecoration position="top-left" />
+              <CornerDecoration position="top-right" />
+            </>
+          )}
 
-          {/* Brand Header */}
-          <div style={{ marginBottom: 20, position: 'relative' }}>
+          {/* Brand Header - Collapsed mode shows only icon */}
+          <div style={{ marginBottom: collapsed ? 16 : 20, position: 'relative' }}>
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              marginBottom: 16,
-              padding: '12px',
-              background: 'linear-gradient(135deg, rgba(0, 245, 255, 0.08) 0%, transparent 50%)',
-              border: '1px solid rgba(0, 245, 255, 0.2)',
-              clipPath: 'polygon(0 0, 100% 0, 100% 70%, 95% 100%, 0 100%)',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              marginBottom: collapsed ? 0 : 16,
+              padding: collapsed ? '8px' : '12px',
+              background: collapsed ? 'transparent' : 'linear-gradient(135deg, rgba(0, 245, 255, 0.08) 0%, transparent 50%)',
+              border: collapsed ? 'none' : '1px solid rgba(0, 245, 255, 0.2)',
+              clipPath: collapsed ? 'none' : 'polygon(0 0, 100% 0, 100% 70%, 95% 100%, 0 100%)',
             }}>
-              <div style={{ position: 'relative', marginRight: 12 }}>
-                <Avatar size={48} style={{ 
+              <div style={{ position: 'relative' }}>
+                <Avatar size={collapsed ? 40 : 48} style={{ 
                   backgroundColor: '#0a0a0f', 
                   border: '2px solid #00f5ff',
                   boxShadow: '0 0 20px rgba(0, 245, 255, 0.4), inset 0 0 15px rgba(0, 245, 255, 0.2)',
                   fontFamily: "'Orbitron', monospace",
                   fontWeight: 'bold',
-                  fontSize: '20px',
+                  fontSize: collapsed ? '16px' : '20px',
                   color: '#00f5ff',
                 }}>
                   DA
@@ -250,168 +261,176 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   position: 'absolute',
                   bottom: -2,
                   right: -2,
-                  width: 12,
-                  height: 12,
+                  width: collapsed ? 10 : 12,
+                  height: collapsed ? 10 : 12,
                   background: '#00ff88',
                   borderRadius: '50%',
                   boxShadow: '0 0 10px #00ff88',
                   animation: 'pulse 2s infinite',
                 }} />
               </div>
-              <div>
-                <div style={{ 
-                  color: '#00f5ff', 
-                  fontWeight: 'bold', 
-                  fontSize: 20,
-                  fontFamily: "'Orbitron', monospace",
-                  letterSpacing: '2px',
-                  textShadow: '0 0 10px rgba(0, 245, 255, 0.5)',
-                }}>
-                  DATA AGENT
+              {!collapsed && (
+                <div style={{ marginLeft: 12 }}>
+                  <div style={{ 
+                    color: '#00f5ff', 
+                    fontWeight: 'bold', 
+                    fontSize: 20,
+                    fontFamily: "'Orbitron', monospace",
+                    letterSpacing: '2px',
+                    textShadow: '0 0 10px rgba(0, 245, 255, 0.5)',
+                  }}>
+                    DATA AGENT
+                  </div>
+                  <div style={{ 
+                    color: '#4a4a5a', 
+                    fontSize: 9, 
+                    letterSpacing: '3px',
+                    fontFamily: "'Rajdhani', sans-serif",
+                    textTransform: 'uppercase',
+                  }}>
+                    NEURAL INTERFACE
+                  </div>
                 </div>
-                <div style={{ 
-                  color: '#4a4a5a', 
-                  fontSize: 9, 
-                  letterSpacing: '3px',
-                  fontFamily: "'Rajdhani', sans-serif",
-                  textTransform: 'uppercase',
-                }}>
-                  NEURAL INTERFACE v2.0
-                </div>
-              </div>
+              )}
             </div>
 
-            <MechaDivider />
+            {!collapsed && (
+              <>
+                <MechaDivider />
 
-            {/* Agent Switcher */}
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                color: '#00f5ff', 
-                fontSize: 10, 
-                marginBottom: 12, 
-                textTransform: 'uppercase', 
-                letterSpacing: '3px',
-                fontFamily: "'Rajdhani', sans-serif",
-                fontWeight: 600,
-              }}>
-                <ScanOutlined style={{ marginRight: 8, fontSize: 12 }} />
-                Active Intelligence Node
-              </div>
-              <div style={{
-                position: 'relative',
-                padding: '2px',
-                background: 'linear-gradient(135deg, #00f5ff 0%, #0088ff 50%, #00f5ff 100%)',
-                clipPath: 'polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)',
-              }}>
-                <Select
-                  value={selectedAgentId}
-                  onChange={handleAgentSwitch}
-                  style={{ width: '100%' }}
-                  placeholder="Select Node"
-                  dropdownStyle={{ 
-                    backgroundColor: '#0d0d12', 
-                    border: '1px solid rgba(0, 245, 255, 0.3)',
-                    boxShadow: '0 0 30px rgba(0, 245, 255, 0.2)',
-                  }}
-                  variant="borderless"
-                  size="large"
-                >
-                  {agents.map((agent) => (
-                    <Option key={agent.value} value={agent.value}>
-                      <div style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
-                        <div style={{ position: 'relative', marginRight: 12 }}>
-                          <Avatar size={32} style={{ 
-                            backgroundColor: 'rgba(0, 245, 255, 0.1)', 
-                            border: '1px solid rgba(0, 245, 255, 0.3)',
-                          }}>
-                            <RobotOutlined style={{ color: '#00f5ff' }} />
-                          </Avatar>
-                          <div style={{
-                            position: 'absolute',
-                            bottom: 0,
-                            right: 0,
-                            width: 8,
-                            height: 8,
-                            background: '#00ff88',
-                            borderRadius: '50%',
-                            boxShadow: '0 0 6px #00ff88',
-                          }} />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ 
-                            color: selectedAgentId === agent.value ? '#00f5ff' : '#e0e0e5', 
-                            fontSize: 13,
-                            fontWeight: 600,
-                            fontFamily: "'Rajdhani', sans-serif",
-                            letterSpacing: '1px',
-                          }}>
-                            {agent.title}
+                {/* Agent Switcher */}
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: '#00f5ff', 
+                    fontSize: 10, 
+                    marginBottom: 12, 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '3px',
+                    fontFamily: "'Rajdhani', sans-serif",
+                    fontWeight: 600,
+                  }}>
+                    <ScanOutlined style={{ marginRight: 8, fontSize: 12 }} />
+                    Active Intelligence Node
+                  </div>
+                  <div style={{
+                    position: 'relative',
+                    padding: '2px',
+                    background: 'linear-gradient(135deg, #00f5ff 0%, #0088ff 50%, #00f5ff 100%)',
+                    clipPath: 'polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)',
+                  }}>
+                    <Select
+                      value={selectedAgentId}
+                      onChange={handleAgentSwitch}
+                      style={{ width: '100%' }}
+                      placeholder="Select Node"
+                      dropdownStyle={{ 
+                        backgroundColor: '#0d0d12', 
+                        border: '1px solid rgba(0, 245, 255, 0.3)',
+                        boxShadow: '0 0 30px rgba(0, 245, 255, 0.2)',
+                      }}
+                      variant="borderless"
+                      size="large"
+                    >
+                      {agents.map((agent) => (
+                        <Option key={agent.value} value={agent.value}>
+                          <div style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
+                            <div style={{ position: 'relative', marginRight: 12 }}>
+                              <Avatar size={32} style={{ 
+                                backgroundColor: 'rgba(0, 245, 255, 0.1)', 
+                                border: '1px solid rgba(0, 245, 255, 0.3)',
+                              }}>
+                                <RobotOutlined style={{ color: '#00f5ff' }} />
+                              </Avatar>
+                              <div style={{
+                                position: 'absolute',
+                                bottom: 0,
+                                right: 0,
+                                width: 8,
+                                height: 8,
+                                background: '#00ff88',
+                                borderRadius: '50%',
+                                boxShadow: '0 0 6px #00ff88',
+                              }} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ 
+                                color: selectedAgentId === agent.value ? '#00f5ff' : '#e0e0e5', 
+                                fontSize: 13,
+                                fontWeight: 600,
+                                fontFamily: "'Rajdhani', sans-serif",
+                                letterSpacing: '1px',
+                              }}>
+                                {agent.title}
+                              </div>
+                              <div style={{ 
+                                color: '#00ff88', 
+                                fontSize: 10,
+                                fontFamily: "'Orbitron', monospace",
+                                letterSpacing: '1px',
+                              }}>
+                                {agent.subtitle}
+                              </div>
+                            </div>
+                            {selectedAgentId === agent.value && (
+                              <div style={{
+                                width: 6,
+                                height: 6,
+                                background: '#00f5ff',
+                                boxShadow: '0 0 10px #00f5ff',
+                              }} />
+                            )}
                           </div>
-                          <div style={{ 
-                            color: '#00ff88', 
-                            fontSize: 10,
-                            fontFamily: "'Orbitron', monospace",
-                            letterSpacing: '1px',
-                          }}>
-                            {agent.subtitle}
-                          </div>
-                        </div>
-                        {selectedAgentId === agent.value && (
-                          <div style={{
-                            width: 6,
-                            height: 6,
-                            background: '#00f5ff',
-                            boxShadow: '0 0 10px #00f5ff',
-                          }} />
-                        )}
-                      </div>
-                    </Option>
-                  ))}
-                </Select>
-              </div>
-            </div>
+                        </Option>
+                      ))}
+                    </Select>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Status Bar */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            padding: '8px 12px',
-            marginBottom: 16,
-            background: 'rgba(0, 245, 255, 0.05)',
-            borderTop: '1px solid rgba(0, 245, 255, 0.1)',
-            borderBottom: '1px solid rgba(0, 245, 255, 0.1)',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <div style={{
-                width: 6,
-                height: 6,
-                background: '#00ff88',
-                borderRadius: '50%',
-                boxShadow: '0 0 8px #00ff88',
-                marginRight: 6,
-                animation: 'blink 1.5s infinite',
-              }} />
-              <span style={{ 
-                color: '#00ff88', 
+          {/* Status Bar - Hidden when collapsed */}
+          {!collapsed && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              padding: '8px 12px',
+              marginBottom: 16,
+              background: 'rgba(0, 245, 255, 0.05)',
+              borderTop: '1px solid rgba(0, 245, 255, 0.1)',
+              borderBottom: '1px solid rgba(0, 245, 255, 0.1)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{
+                  width: 6,
+                  height: 6,
+                  background: '#00ff88',
+                  borderRadius: '50%',
+                  boxShadow: '0 0 8px #00ff88',
+                  marginRight: 6,
+                  animation: 'blink 1.5s infinite',
+                }} />
+                <span style={{ 
+                  color: '#00ff88', 
+                  fontSize: 9, 
+                  fontFamily: "'Orbitron', monospace",
+                  letterSpacing: '1px',
+                }}>
+                  ONLINE
+                </span>
+              </div>
+              <div style={{ 
+                color: '#6a6a7a', 
                 fontSize: 9, 
                 fontFamily: "'Orbitron', monospace",
                 letterSpacing: '1px',
               }}>
-                ONLINE
-              </span>
+                SYS: NOMINAL
+              </div>
             </div>
-            <div style={{ 
-              color: '#6a6a7a', 
-              fontSize: 9, 
-              fontFamily: "'Orbitron', monospace",
-              letterSpacing: '1px',
-            }}>
-              SYS: NOMINAL
-            </div>
-          </div>
+          )}
 
           {/* Navigation Menu */}
           <Menu
@@ -427,43 +446,51 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               fontFamily: "'Rajdhani', sans-serif",
               fontSize: '14px',
               letterSpacing: '1px',
+              overflow: collapsed ? 'visible' : 'hidden',
             }}
-            defaultOpenKeys={['knowledge', 'system']}
+            defaultOpenKeys={!collapsed ? ['knowledge', 'system'] : []}
+            inlineCollapsed={collapsed}
           />
 
-          {/* Create Agent Button */}
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => navigateToPath('/agent/new')}
-            style={{
-              marginTop: 16,
-              background: 'linear-gradient(135deg, rgba(0, 245, 255, 0.2) 0%, rgba(0, 136, 255, 0.1) 100%)',
-              border: '1px solid rgba(0, 245, 255, 0.5)',
-              color: '#00f5ff',
-              height: '48px',
-              fontFamily: "'Orbitron', monospace",
-              fontSize: '12px',
-              letterSpacing: '2px',
-              textTransform: 'uppercase',
-              boxShadow: '0 0 20px rgba(0, 245, 255, 0.2), inset 0 0 20px rgba(0, 245, 255, 0.05)',
-              clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)',
-              transition: 'all 0.3s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0, 245, 255, 0.4) 0%, rgba(0, 136, 255, 0.2) 100%)';
-              e.currentTarget.style.boxShadow = '0 0 30px rgba(0, 245, 255, 0.4), inset 0 0 30px rgba(0, 245, 255, 0.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0, 245, 255, 0.2) 0%, rgba(0, 136, 255, 0.1) 100%)';
-              e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 245, 255, 0.2), inset 0 0 20px rgba(0, 245, 255, 0.05)';
-            }}
-          >
-            Initialize Agent Node
-          </Button>
+          {/* Create Agent Button - Hidden when collapsed */}
+          {!collapsed && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => navigateToPath('/agent/new')}
+              style={{
+                marginTop: 16,
+                background: 'linear-gradient(135deg, rgba(0, 245, 255, 0.2) 0%, rgba(0, 136, 255, 0.1) 100%)',
+                border: '1px solid rgba(0, 245, 255, 0.5)',
+                color: '#00f5ff',
+                height: '48px',
+                fontFamily: "'Orbitron', monospace",
+                fontSize: '12px',
+                letterSpacing: '2px',
+                textTransform: 'uppercase',
+                boxShadow: '0 0 20px rgba(0, 245, 255, 0.2), inset 0 0 20px rgba(0, 245, 255, 0.05)',
+                clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0, 245, 255, 0.4) 0%, rgba(0, 136, 255, 0.2) 100%)';
+                e.currentTarget.style.boxShadow = '0 0 30px rgba(0, 245, 255, 0.4), inset 0 0 30px rgba(0, 245, 255, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0, 245, 255, 0.2) 0%, rgba(0, 136, 255, 0.1) 100%)';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 245, 255, 0.2), inset 0 0 20px rgba(0, 245, 255, 0.05)';
+              }}
+            >
+              Initialize Agent Node
+            </Button>
+          )}
 
-          <CornerDecoration position="bottom-left" />
-          <CornerDecoration position="bottom-right" />
+          {!collapsed && (
+            <>
+              <CornerDecoration position="bottom-left" />
+              <CornerDecoration position="bottom-right" />
+            </>
+          )}
         </div>
       </Sider>
 
