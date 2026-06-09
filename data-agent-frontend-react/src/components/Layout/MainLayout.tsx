@@ -260,7 +260,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <div style={{
                   position: 'absolute',
                   bottom: 7,
-                  right: -20,
+                  right: collapsed ? -201 : -20,
                   width: collapsed ? 10 : 12,
                   height: collapsed ? 10 : 12,
                   background: '#00ff88',
@@ -285,7 +285,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     color: '#4a4a5a', 
                     fontSize: 9, 
                     letterSpacing: '3px',
-                    paddingLeft: 8,
+                    paddingLeft: 10,
                     fontFamily: "'Rajdhani', sans-serif",
                     textTransform: 'uppercase',
                   }}>
