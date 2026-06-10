@@ -13,23 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.cloud.ai.dataagent.entity;
+package com.alibaba.cloud.ai.dataagent.service;
 
-import lombok.Data;
-import java.time.LocalDateTime;
+import com.alibaba.cloud.ai.dataagent.vo.UserVO;
+
+import java.util.List;
 
 /**
- * @description 用户实体类
+ * @description 用户管理服务接口
  */
-@Data
-public class User {
-    private Long id;
-    private String username;      // 用户名(唯一)
-    private String password;      // BCrypt加密后的密码
-    private String email;         // 邮箱(可选)
-    private String nickname;      // 昵称
-    private String avatar;        // 头像URL
-    private Integer status;       // 状态: 0-待审核, 1-已启用, 2-已禁用
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
+public interface UserService {
+    /**
+     * 获取所有用户列表
+     */
+    List<UserVO> getAllUsers();
+    
+    /**
+     * 启用用户
+     */
+    void enableUser(Long userId);
+    
+    /**
+     * 禁用用户
+     */
+    void disableUser(Long userId);
+    
+    /**
+     * 删除用户
+     */
+    void deleteUser(Long userId);
 }

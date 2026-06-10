@@ -55,6 +55,9 @@ public class AuthServiceImpl implements AuthService {
         
         // 检查用户状态
         if (user.getStatus() == 0) {
+            throw new InvalidInputException("账户待审核,请联系管理员");
+        }
+        if (user.getStatus() == 2) {
             throw new InvalidInputException("账户已被禁用");
         }
         
@@ -85,29 +88,19 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidInputException("用户名已存在");
         }
         
-        // 创建新用户
+        // 创建新用户,默认为待审核状态
         User newUser = new User();
         newUser.setUsername(request.getUsername());
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
         newUser.setNickname(request.getUsername());
-        newUser.setStatus(1);
+        newUser.setStatus(0); // 0-待审核
         
         userMapper.insert(newUser);
         
-        // 生成Token
-        String token = jwtUtil.generateToken(newUser.getId(), newUser.getUsername());
+        log.info("新用户注册成功,等待审核: username={}, userId={}", newUser.getUsername(), newUser.getId());
         
-        LoginResponse.UserInfo userInfo = LoginResponse.UserInfo.builder()
-                .id(newUser.getId())
-                .username(newUser.getUsername())
-                .nickname(newUser.getNickname())
-                .build();
-        
-        return LoginResponse.builder()
-                .token(token)
-                .expiresIn(jwtUtil.getExpiration())
-                .userInfo(userInfo)
-                .build();
+        // 注册成功后不返回Token,需要等待管理员审核
+        throw new InvalidInputException("注册成功,账户待审核,请联系管理员启用账户后登录");
     }
     
     @Override

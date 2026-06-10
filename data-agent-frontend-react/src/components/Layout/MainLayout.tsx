@@ -63,6 +63,7 @@ const routeTitleMap: Record<string, string> = {
   '/knowledge/semantic-models': '语义模型配置',
   '/system/data-sources': '数据连接',
   '/system/model-config': '模型配置',
+  '/system/users': '用户管理',
   '/system/access-api': 'API 访问配置',
   '/system/settings': '通用设置',
   '/agent/new': 'Create Agent',
@@ -217,6 +218,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       label: '通用设置',
       children: [
         { key: '/system/agents', icon: <ApiOutlined />, label: '智能体管理' },
+        { key: '/system/users', icon: <UserOutlined />, label: '用户管理' },
         { key: '/system/data-sources', icon: <DatabaseOutlined />, label: '数据连接' },
         { key: '/system/model-config', icon: <CodeSandboxOutlined />, label: '模型配置' },
       ],

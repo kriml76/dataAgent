@@ -28,6 +28,7 @@ import SystemAgentsPage from '@/pages/system/SystemAgentsPage';
 import ModelConfigPage from '@/pages/system/ModelConfigPage';
 import DataSourcesPage from '@/pages/system/datasources/DataSourcesPage';
 import AccessApiPage from '@/pages/system/AccessApiPage';
+import UserManagementPage from '@/pages/system/UserManagementPage';
 import PromptConfigPage from '@/pages/prompt-config/PromptConfigPage';
 import LoginPage from '@/pages/LoginPage';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -110,6 +111,12 @@ function AppRouter() {
         <Route path="/system/access-api" element={
           <ProtectedRoute>
             <MainLayout><AccessApiPage /></MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/system/users" element={
+          <ProtectedRoute>
+            <MainLayout><UserManagementPage /></MainLayout>
           </ProtectedRoute>
         } />
         

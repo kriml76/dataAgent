@@ -13,23 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.cloud.ai.dataagent.entity;
+package com.alibaba.cloud.ai.dataagent.vo;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 /**
- * @description 用户实体类
+ * @description 用户信息VO
  */
 @Data
-public class User {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserVO {
     private Long id;
-    private String username;      // 用户名(唯一)
-    private String password;      // BCrypt加密后的密码
-    private String email;         // 邮箱(可选)
-    private String nickname;      // 昵称
-    private String avatar;        // 头像URL
-    private Integer status;       // 状态: 0-待审核, 1-已启用, 2-已禁用
+    private String username;
+    private String email;
+    private String nickname;
+    private String avatar;
+    private Integer status;
+    private String statusDescription;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

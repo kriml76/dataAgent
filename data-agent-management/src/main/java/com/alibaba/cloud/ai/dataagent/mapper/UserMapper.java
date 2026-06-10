@@ -18,11 +18,19 @@ package com.alibaba.cloud.ai.dataagent.mapper;
 import com.alibaba.cloud.ai.dataagent.entity.User;
 import org.apache.ibatis.annotations.*;
 
+import java.util.List;
+
 /**
  * @description 用户数据访问接口
  */
 @Mapper
 public interface UserMapper {
+    
+    /**
+     * 查询所有用户
+     */
+    @Select("SELECT * FROM user ORDER BY create_time DESC")
+    List<User> findAll();
     
     /**
      * 根据用户名查询用户
@@ -50,4 +58,10 @@ public interface UserMapper {
     @Update("UPDATE user SET password=#{password}, email=#{email}, nickname=#{nickname}, " +
             "avatar=#{avatar}, status=#{status} WHERE id=#{id}")
     int update(User user);
+    
+    /**
+     * 删除用户
+     */
+    @Delete("DELETE FROM user WHERE id = #{id}")
+    int deleteById(@Param("id") Long id);
 }
