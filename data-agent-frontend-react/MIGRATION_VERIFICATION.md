@@ -89,7 +89,7 @@
 - [x] **系统配置**
   - [x] 数据源管理 (表格)
   - [x] 模型配置 (占位页面)
-  - [x] Agent Studio (占位页面)
+  - [x] 智能体管理 (占位页面)
   - [x] Datasource 服务层
   - [x] ModelConfig 服务层
 

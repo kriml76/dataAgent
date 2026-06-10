@@ -57,8 +57,8 @@ const routeTitleMap: Record<string, string> = {
   '/knowledge/business': '业务知识配置',
   '/knowledge/agents': '智能体知识库',
   '/knowledge/semantic-models': '语义模型配置',
-  '/system/data-sources': 'Data Sources',
-  '/system/model-config': 'Model Registry',
+  '/system/data-sources': '数据连接',
+  '/system/model-config': '模型配置',
   '/system/settings': '通用设置',
   '/agent/new': 'Create Agent',
 };
@@ -195,9 +195,9 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       icon: <DatabaseOutlined style={{ filter: 'drop-shadow(0 0 4px #00f5ff)' }} />,
       label: '通用设置',
       children: [
-        { key: '/system/agents', icon: <ApiOutlined />, label: 'Agent Studio' },
-        { key: '/system/data-sources', icon: <DatabaseOutlined />, label: 'Data Sources' },
-        { key: '/system/model-config', icon: <CodeSandboxOutlined />, label: 'Model Registry' },
+        { key: '/system/agents', icon: <ApiOutlined />, label: '智能体管理' },
+        { key: '/system/data-sources', icon: <DatabaseOutlined />, label: '数据连接' },
+        { key: '/system/model-config', icon: <CodeSandboxOutlined />, label: '模型配置' },
       ],
     },
   ];
