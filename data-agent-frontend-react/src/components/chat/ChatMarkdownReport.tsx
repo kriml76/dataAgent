@@ -91,10 +91,10 @@ const ChatMarkdownReport: React.FC<ChatMarkdownReportProps> = ({ content }) => {
   }, [format, content, loadHtmlToIframe]);
 
   useEffect(() => {
-    if (store.reportFormat === 'html') {
+    if (store.showReportFullscreen && store.reportFormat === 'html') {
       loadHtmlToIframe(fullscreenIframeRef.current, store.fullscreenReportContent);
     }
-  }, [store.reportFormat, store.fullscreenReportContent, loadHtmlToIframe]);
+  }, [store.showReportFullscreen, store.reportFormat, store.fullscreenReportContent, store.fullscreenReportTimestamp, loadHtmlToIframe]);
 
   const downloadMd = useCallback(() => {
     if (!content) return;
@@ -128,7 +128,7 @@ const ChatMarkdownReport: React.FC<ChatMarkdownReportProps> = ({ content }) => {
   }, [content]);
 
   const handleCloseFullscreen = () => {
-    store.openReportFullscreen('');
+    store.closeReportFullscreen();
   };
 
   return (
@@ -214,9 +214,9 @@ const ChatMarkdownReport: React.FC<ChatMarkdownReportProps> = ({ content }) => {
         okText="确定"
         width="100vw"
         style={{ top: 0, maxWidth: '100vw', padding: 0 }}
-        footer={null}
         closeIcon={<CloseOutlined />}
         className="fullscreen-modal"
+        centered={false}
       >
         <div className="fullscreen-header">
           <Typography.Text strong style={{ fontSize: '14px' }}>

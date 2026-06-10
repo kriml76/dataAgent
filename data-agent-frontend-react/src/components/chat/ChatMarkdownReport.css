@@ -81,6 +81,7 @@
   top: 0;
   margin: 0;
   padding: 0;
+  max-width: 100vw !important;
 }
 
 .fullscreen-modal .ant-modal-content {
@@ -89,15 +90,24 @@
 }
 
 .fullscreen-modal .ant-modal-body {
-  height: 100%;
+  height: calc(100vh - 56px);
   padding: 0;
+  overflow-y: hidden;
+}
+
+.fullscreen-modal .ant-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  z-index: 1000;
+  color: #333;
 }
 
 .fullscreen-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: 16px 64px 16px 24px;
   border-bottom: 1px solid #e8edf2;
   background: white;
   position: sticky;

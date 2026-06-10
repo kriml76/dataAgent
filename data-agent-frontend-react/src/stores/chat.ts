@@ -101,6 +101,7 @@ interface ChatStore {
   reportFormat: 'markdown' | 'html';
   showReportFullscreen: boolean;
   fullscreenReportContent: string;
+  fullscreenReportTimestamp: number;
   streamingReportContent: string;
   isReportStreaming: boolean;
   currentAgentId: number | undefined;
@@ -128,6 +129,7 @@ interface ChatStore {
   stopStreaming: () => Promise<void>;
   submitFeedback: (rejected: boolean, content: string) => Promise<void>;
   openReportFullscreen: (content: string) => void;
+  closeReportFullscreen: () => void;
   downloadHtmlReport: (content: string) => Promise<void>;
   switchDatasource: (ds: Datasource) => Promise<void>;
   switchModel: (modelId: number) => Promise<void>;
@@ -197,6 +199,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   reportFormat: 'markdown',
   showReportFullscreen: false,
   fullscreenReportContent: '',
+  fullscreenReportTimestamp: 0,
   streamingReportContent: '',
   isReportStreaming: false,
   currentAgentId: undefined,
@@ -506,6 +509,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({
       fullscreenReportContent: content,
       showReportFullscreen: true,
+      fullscreenReportTimestamp: Date.now(),
+    });
+  },
+
+  closeReportFullscreen: () => {
+    set({
+      showReportFullscreen: false,
     });
   },
 

@@ -73,11 +73,20 @@ window.onload = function() {
   var rawText = rawDiv.innerText;
   var renderer = new marked.Renderer();
   renderer.code = function(code, language) {
-    if (language === 'echarts' || language === 'json') {
+    if (language === 'echarts') {
       var id = 'chart_' + Math.random().toString(36).substr(2, 9);
       return '<div id="' + id + '" class="chart-box" data-option="' + encodeURIComponent(code) + '"></div>';
     }
-    return '<pre><code class="language-' + language + '">' + code.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code></pre>';
+    if (language === 'json') {
+      try {
+        var parsed = JSON.parse(code);
+        if (parsed && typeof parsed === 'object' && ('option' in parsed || 'series' in parsed)) {
+          var id = 'chart_' + Math.random().toString(36).substr(2, 9);
+          return '<div id="' + id + '" class="chart-box" data-option="' + encodeURIComponent(code) + '"></div>';
+        }
+      } catch(e) {}
+    }
+    return '<pre><code class="language-' + (language || '') + '">' + code.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code></pre>';
   };
   document.getElementById('render-target').innerHTML = marked.parse(rawText, { renderer: renderer });
   if (typeof echarts !== 'undefined') {
