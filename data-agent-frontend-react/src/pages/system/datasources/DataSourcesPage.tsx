@@ -51,7 +51,7 @@ import {
 } from '@ant-design/icons';
 import datasourceService, { type Datasource, type LogicalRelation } from '@/services/datasource';
 import agentDatasourceService from '@/services/agentDatasource';
-import { importTableFromExcel, downloadTableImportTemplate } from '@/services/datasource/tableImport';
+import { importTableFromExcel, importTableFromExcelAutoDetect, downloadTableImportTemplate } from '@/services/datasource/tableImport';
 import type { TableImportResult } from '@/types/tableImport';
 import { useSearchParams } from 'react-router-dom';
 import { Upload, Alert } from 'antd';
@@ -110,6 +110,7 @@ const DataSourcesPage: React.FC = () => {
   const [importDatasourceId, setImportDatasourceId] = useState<number>(0);
   const [importFile, setImportFile] = useState<any>(null);
   const [importing, setImporting] = useState(false);
+  const [importMode, setImportMode] = useState<'standard' | 'auto'>('auto'); // auto:自动识别, standard:标准模式
 
   useEffect(() => {
     loadData();
@@ -287,7 +288,8 @@ const DataSourcesPage: React.FC = () => {
 
     setImporting(true);
     try {
-      const result: TableImportResult = await importTableFromExcel(
+      const importFn = importMode === 'auto' ? importTableFromExcelAutoDetect : importTableFromExcel;
+      const result: TableImportResult = await importFn(
         importFile.originFileObj as File,
         importDatasourceId
       );

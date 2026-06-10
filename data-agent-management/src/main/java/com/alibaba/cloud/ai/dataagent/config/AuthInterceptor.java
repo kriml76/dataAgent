@@ -45,7 +45,8 @@ public class AuthInterceptor implements WebFilter {
             "/api/auth/verify",
             "/swagger-ui.html",
             "/v3/api-docs",
-            "/uploads"
+            "/uploads",
+            "/api/datasource/import-table/template"
     );
     
     @Override

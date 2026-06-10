@@ -18,6 +18,7 @@ package com.alibaba.cloud.ai.dataagent.controller;
 import com.alibaba.cloud.ai.dataagent.dto.datasource.DatasourceTypeDTO;
 import com.alibaba.cloud.ai.dataagent.dto.schema.CreateLogicalRelationDTO;
 import com.alibaba.cloud.ai.dataagent.dto.schema.UpdateLogicalRelationDTO;
+import java.io.ByteArrayOutputStream;
 import com.alibaba.cloud.ai.dataagent.entity.Datasource;
 import com.alibaba.cloud.ai.dataagent.entity.LogicalRelation;
 import com.alibaba.cloud.ai.dataagent.enums.BizDataSourceTypeEnum;
@@ -301,13 +302,86 @@ public class DatasourceController {
 	}
 
 	/**
-	 * 从Excel导入表结构和数据
+	 * 下载表导入Excel模板
+	 */
+	@GetMapping("/import-table/template")
+	public Mono<Void> downloadImportTemplate(org.springframework.http.server.reactive.ServerHttpResponse response) {
+		return Mono.fromCallable(() -> {
+			try {
+				response.getHeaders().setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
+				response.getHeaders().setContentDispositionFormData("attachment", "table_import_template.xlsx");
+
+				// Sheet 1: 表结构定义 - 使用精确的表头（带星号）
+				List<List<String>> header = java.util.Arrays.asList(
+					java.util.Arrays.asList("字段名*"),
+					java.util.Arrays.asList("数据类型*"),
+					java.util.Arrays.asList("是否主键"),
+					java.util.Arrays.asList("是否非空"),
+					java.util.Arrays.asList("默认值"),
+					java.util.Arrays.asList("字段注释")
+				);
+
+				// 示例数据
+				List<List<Object>> data = new java.util.ArrayList<>();
+				data.add(java.util.Arrays.asList("id", "INT", "是", "是", "", "主键ID"));
+				data.add(java.util.Arrays.asList("name", "VARCHAR(100)", "否", "是", "", "姓名"));
+				data.add(java.util.Arrays.asList("age", "INT", "否", "否", "0", "年龄"));
+				data.add(java.util.Arrays.asList("email", "VARCHAR(255)", "否", "否", "", "邮箱"));
+				data.add(java.util.Arrays.asList("created_at", "DATETIME", "否", "是", "NOW()", "创建时间"));
+
+				// Sheet 2: 示例数据
+				List<List<String>> dataHeader = java.util.Arrays.asList(
+					java.util.Arrays.asList("id"),
+					java.util.Arrays.asList("name"),
+					java.util.Arrays.asList("age"),
+					java.util.Arrays.asList("email"),
+					java.util.Arrays.asList("created_at")
+				);
+
+				List<List<Object>> dataRows = new java.util.ArrayList<>();
+				dataRows.add(java.util.Arrays.asList(1, "张三", 25, "zhangsan@example.com", "2024-01-01 10:00:00"));
+				dataRows.add(java.util.Arrays.asList(2, "李四", 30, "lisi@example.com", "2024-01-02 11:00:00"));
+				dataRows.add(java.util.Arrays.asList(3, "王五", 28, "wangwu@example.com", "2024-01-03 12:00:00"));
+
+				// 写入Excel
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				com.alibaba.excel.ExcelWriter excelWriter = com.alibaba.excel.EasyExcel.write(out)
+					.registerWriteHandler(new com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy())
+					.build();
+
+				// 写入Sheet 1: 表结构定义
+				com.alibaba.excel.write.metadata.WriteSheet sheet1 = com.alibaba.excel.EasyExcel.writerSheet(0, "表结构定义")
+					.head(header)
+					.build();
+				excelWriter.write(data, sheet1);
+
+				// 写入Sheet 2: 数据行
+				com.alibaba.excel.write.metadata.WriteSheet sheet2 = com.alibaba.excel.EasyExcel.writerSheet(1, "数据行")
+					.head(dataHeader)
+					.build();
+				excelWriter.write(dataRows, sheet2);
+
+				excelWriter.finish();
+
+				response.getHeaders().setContentLength(out.size());
+				response.writeWith(Mono.just(response.bufferFactory().wrap(out.toByteArray()))).block();
+				return null;
+			}
+			catch (Exception e) {
+				log.error("下载Excel模板失败", e);
+				throw new RuntimeException("下载模板失败: " + e.getMessage());
+			}
+		}).subscribeOn(Schedulers.boundedElastic()).then();
+	}
+
+	/**
+	 * 从Excel导入表结构和数据 (标准模式)
 	 */
 	@PostMapping(value = "/{id}/import-table", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public Mono<ApiResponse<TableImportResult>> importTableFromExcel(@PathVariable Integer id,
 			@RequestPart("file") FilePart file) {
 		String filename = file.filename();
-		log.info("接收到Excel导入请求: datasourceId={}, filename={}", id, filename);
+		log.info("接收到Excel导入请求(标准模式): datasourceId={}, filename={}", id, filename);
 
 		return DataBufferUtils.join(file.content()).flatMap(dataBuffer -> {
 			byte[] bytes = new byte[dataBuffer.readableByteCount()];
@@ -322,6 +396,42 @@ public class DatasourceController {
 					} else {
 						return ApiResponse.error(result.getMessage() != null ? result.getMessage() : "导入失败", result);
 					}
+				}
+			}).subscribeOn(Schedulers.boundedElastic());
+		}).onErrorResume(IllegalArgumentException.class, e -> {
+			log.error("Excel导入参数错误: {}", e.getMessage());
+			TableImportResult errorResult = TableImportResult.builder().success(false).build();
+			errorResult.addError(e.getMessage());
+			return Mono.just(ApiResponse.error("Excel导入失败: " + e.getMessage(), errorResult));
+		}).onErrorResume(Exception.class, e -> {
+			log.error("Excel导入失败", e);
+			TableImportResult errorResult = TableImportResult.builder().success(false).build();
+			errorResult.addError(e.getMessage());
+			return Mono.just(ApiResponse.error("Excel导入失败: " + e.getMessage(), errorResult));
+		});
+	}
+
+	/**
+	 * 从Excel导入表结构和数据 (自动识别模式)
+	 * 第一行作为字段名，自动推断字段类型
+	 */
+	@PostMapping(value = "/{id}/import-table-auto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public Mono<ApiResponse<TableImportResult>> importTableFromExcelAutoDetect(@PathVariable Integer id,
+			@RequestPart("file") FilePart file) {
+		String filename = file.filename();
+		log.info("接收到Excel导入请求(自动识别模式): datasourceId={}, filename={}", id, filename);
+
+		return DataBufferUtils.join(file.content()).flatMap(dataBuffer -> {
+			byte[] bytes = new byte[dataBuffer.readableByteCount()];
+			dataBuffer.read(bytes);
+			DataBufferUtils.release(dataBuffer);
+
+			return Mono.fromCallable(() -> {
+				TableImportResult result = tableImportService.importTableFromExcelAutoDetect(bytes, filename, id);
+				if (result.getSuccess()) {
+					return ApiResponse.success(result.getMessage(), result);
+				} else {
+					return ApiResponse.error(result.getMessage() != null ? result.getMessage() : "导入失败", result);
 				}
 			}).subscribeOn(Schedulers.boundedElastic());
 		}).onErrorResume(IllegalArgumentException.class, e -> {

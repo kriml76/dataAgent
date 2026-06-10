@@ -53,7 +53,7 @@ public class TableImportService {
 	private final DdlGenerator ddlGenerator;
 
 	/**
-	 * 从Excel导入表结构和数据
+	 * 标准模式导入 - 从Excel导入表结构和数据
 	 *
 	 * @param inputStream Excel文件输入流
 	 * @param filename 文件名
@@ -62,8 +62,50 @@ public class TableImportService {
 	 */
 	@Transactional(rollbackFor = Exception.class)
 	public TableImportResult importTableFromExcel(InputStream inputStream, String filename, Integer datasourceId) {
-		log.info("开始从Excel导入表: datasourceId={}, filename={}", datasourceId, filename);
+		log.info("标准模式开始导入Excel: datasourceId={}, filename={}", datasourceId, filename);
 
+		try {
+			TableStructureDTO tableStructure = excelService.parseExcel(inputStream, filename);
+			return doImportTable(tableStructure, datasourceId);
+		} catch (IOException e) {
+			log.error("Excel解析失败", e);
+			return TableImportResult.builder()
+				.success(false)
+				.rowCount(0)
+				.message("Excel解析失败: " + e.getMessage())
+				.build();
+		}
+	}
+
+	/**
+	 * 自动识别模式导入 - 第一行作为字段名，自动推断类型
+	 *
+	 * @param excelBytes Excel文件字节
+	 * @param filename 文件名
+	 * @param datasourceId 数据源ID
+	 * @return 导入结果
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	public TableImportResult importTableFromExcelAutoDetect(byte[] excelBytes, String filename, Integer datasourceId) {
+		log.info("自动识别模式开始导入Excel: datasourceId={}, filename={}", datasourceId, filename);
+
+		try {
+			TableStructureDTO tableStructure = excelService.parseExcelAutoDetect(excelBytes, filename);
+			return doImportTable(tableStructure, datasourceId);
+		} catch (IOException e) {
+			log.error("Excel解析失败", e);
+			return TableImportResult.builder()
+				.success(false)
+				.rowCount(0)
+				.message("Excel解析失败: " + e.getMessage())
+				.build();
+		}
+	}
+
+	/**
+	 * 执行实际的表导入逻辑(公共方法)
+	 */
+	private TableImportResult doImportTable(TableStructureDTO tableStructure, Integer datasourceId) {
 		TableImportResult result = TableImportResult.builder()
 			.success(false)
 			.rowCount(0)
@@ -81,15 +123,6 @@ public class TableImportService {
 			DbConfigBO dbConfig = datasourceService.getDbConfig(datasource);
 			String dialect = dbConfig.getDialectType();
 
-			// 2. 解析Excel文件
-			TableStructureDTO tableStructure;
-			try {
-				tableStructure = excelService.parseExcel(inputStream, filename);
-			} catch (IOException e) {
-				result.addError("Excel解析失败: " + e.getMessage());
-				return result;
-			}
-
 			String tableName = tableStructure.getTableName();
 			result.setTableName(tableName);
 
@@ -98,7 +131,7 @@ public class TableImportService {
 				tableStructure.getColumns().size(),
 				tableStructure.getDataRows() != null ? tableStructure.getDataRows().size() : 0);
 
-			// 3. 获取数据库连接
+			// 2. 获取数据库连接
 			Accessor accessor = accessorFactory.getAccessorByDbConfig(dbConfig);
 			if (!(accessor instanceof AbstractAccessor)) {
 				result.addError("不支持的数据源类型");
@@ -107,7 +140,7 @@ public class TableImportService {
 			connection = ((AbstractAccessor) accessor).getConnection(dbConfig);
 			connection.setAutoCommit(false);
 
-			// 4. 生成并执行CREATE TABLE DDL
+			// 3. 生成并执行CREATE TABLE DDL
 			String createTableSql = ddlGenerator.generateCreateTableSql(
 				tableName, 
 				tableStructure.getColumns(), 
@@ -124,7 +157,7 @@ public class TableImportService {
 				return result;
 			}
 
-			// 5. 批量插入数据
+			// 4. 批量插入数据
 			List<Map<String, Object>> dataRows = tableStructure.getDataRows();
 			if (dataRows != null && !dataRows.isEmpty()) {
 				int insertedRows = insertDataBatch(connection, tableName, tableStructure.getColumns(), dataRows);
@@ -132,7 +165,7 @@ public class TableImportService {
 				log.info("成功插入 {} 行数据到表 '{}'", insertedRows, tableName);
 			}
 
-			// 6. 提交事务
+			// 5. 提交事务
 			connection.commit();
 			result.setSuccess(true);
 			result.setMessage(String.format("表 '%s' 导入成功,共插入 %d 行数据", tableName, result.getRowCount()));
