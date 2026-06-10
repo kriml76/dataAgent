@@ -51,15 +51,15 @@ interface AgentOption {
 }
 
 const routeTitleMap: Record<string, string> = {
-  '/chat': 'Data Dialogue',
+  '/chat': '数据问答',
   '/dashboard': 'Data Insights',
-  '/prompt-config': 'Prompt Craft',
-  '/knowledge/business': 'Business Lexicon',
-  '/knowledge/agents': 'Agent Memory',
-  '/knowledge/semantic-models': 'Semantic Schema',
+  '/prompt-config': '提示词配置',
+  '/knowledge/business': '业务知识配置',
+  '/knowledge/agents': '智能体知识库',
+  '/knowledge/semantic-models': '语义模型配置',
   '/system/data-sources': 'Data Sources',
   '/system/model-config': 'Model Registry',
-  '/system/settings': 'Configuration',
+  '/system/settings': '通用设置',
   '/agent/new': 'Create Agent',
 };
 
@@ -114,7 +114,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (location.pathname.startsWith('/agent/') && location.pathname !== '/agent/new') {
       return 'Agent Profile';
     }
-    return routeTitleMap[location.pathname] || 'Data Agent';
+    return routeTitleMap[location.pathname] || 'DATA AGENT';
   }, [location.pathname]);
 
   useEffect(() => {
@@ -173,27 +173,27 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     {
       key: '/chat',
       icon: <MessageOutlined style={{ filter: 'drop-shadow(0 0 4px #00f5ff)' }} />,
-      label: 'Data Dialogue',
+      label: '数据问答',
     },
     {
       key: '/prompt-config',
       icon: <RobotOutlined style={{ filter: 'drop-shadow(0 0 4px #00f5ff)' }} />,
-      label: 'Prompt Craft',
+      label: '提示词配置',
     },
     {
       key: 'knowledge',
       icon: <BookOutlined style={{ filter: 'drop-shadow(0 0 4px #00f5ff)' }} />,
-      label: 'Knowledge Base',
+      label: '知识库管理',
       children: [
-        { key: '/knowledge/business', icon: <FileTextOutlined />, label: 'Business Lexicon' },
-        { key: '/knowledge/agents', icon: <SaveOutlined />, label: 'Agent Memory' },
-        { key: '/knowledge/semantic-models', icon: <BranchesOutlined />, label: 'Semantic Schema' },
+        { key: '/knowledge/business', icon: <FileTextOutlined />, label: '业务知识配置' },
+        { key: '/knowledge/agents', icon: <SaveOutlined />, label: '智能体知识库' },
+        { key: '/knowledge/semantic-models', icon: <BranchesOutlined />, label: '语义模型配置' },
       ],
     },
     {
       key: 'system',
       icon: <DatabaseOutlined style={{ filter: 'drop-shadow(0 0 4px #00f5ff)' }} />,
-      label: 'Configuration',
+      label: '通用设置',
       children: [
         { key: '/system/agents', icon: <ApiOutlined />, label: 'Agent Studio' },
         { key: '/system/data-sources', icon: <DatabaseOutlined />, label: 'Data Sources' },

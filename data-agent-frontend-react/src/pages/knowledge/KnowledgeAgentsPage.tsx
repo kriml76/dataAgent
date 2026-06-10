@@ -108,12 +108,12 @@ const KnowledgeAgentsPage: React.FC = () => {
     resolveAgentId();
   }, [searchParams]);
 
-  // Load data when agentId changes
+  // Load data when agentId or queryParams change
   useEffect(() => {
     if (agentId > 0) {
       loadData();
     }
-  }, [agentId]);
+  }, [agentId, queryParams]);
 
   const loadData = async () => {
     if (agentId <= 0) return;
@@ -200,7 +200,6 @@ const KnowledgeAgentsPage: React.FC = () => {
 
   const handleSearch = () => {
     setQueryParams(prev => ({ ...prev, pageNum: 1 }));
-    loadData();
   };
 
   const clearFilters = () => {
@@ -210,17 +209,14 @@ const KnowledgeAgentsPage: React.FC = () => {
       embeddingStatus: '',
       pageNum: 1,
     }));
-    setTimeout(() => loadData(), 0);
   };
 
   const handleSizeChange = (pageSize: number) => {
     setQueryParams(prev => ({ ...prev, pageSize, pageNum: 1 }));
-    setTimeout(() => loadData(), 0);
   };
 
   const handlePageChange = (pageNum: number) => {
     setQueryParams(prev => ({ ...prev, pageNum }));
-    setTimeout(() => loadData(), 0);
   };
 
   const openCreateDialog = () => {
@@ -544,7 +540,7 @@ const KnowledgeAgentsPage: React.FC = () => {
     <div style={{ padding: 24 }}>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 600, color: '#1565c0' }}>
+        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 600, }}>
           智能体知识库
         </h1>
         <p style={{ color: '#6b6b6b', marginTop: 8 }}>
@@ -603,7 +599,6 @@ const KnowledgeAgentsPage: React.FC = () => {
                 allowClear
                 onChange={(value) => {
                   setQueryParams(prev => ({ ...prev, type: value || '', pageNum: 1 }));
-                  setTimeout(() => loadData(), 0);
                 }}
               />
               <Select
@@ -618,7 +613,6 @@ const KnowledgeAgentsPage: React.FC = () => {
                     embeddingStatus: value || '',
                     pageNum: 1,
                   }));
-                  setTimeout(() => loadData(), 0);
                 }}
               />
               <Button icon={<FilterOutlined />} onClick={clearFilters}>

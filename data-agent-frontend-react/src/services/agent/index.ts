@@ -15,7 +15,7 @@
  */
 
 /**
- * @description 智能体管理服务，处理智能体的增删改查、发布、下线及 API Key 管理
+ * @description DATA AGENT服务，处理智能体的增删改查、发布、下线及 API Key 管理
  */
 
 import apiClient from '@/utils/request';

@@ -366,7 +366,7 @@ const SystemAgentsPage: React.FC = () => {
       {/* Header Section */}
       <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#0f172a' }}>智能体管理</h1>
+          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#0f172a' }}>DATA AGENT</h1>
           <p style={{ color: '#6b6b6b', marginTop: 4 }}>
             创建和管理您的AI智能体，让数据分析更智能
           </p>
