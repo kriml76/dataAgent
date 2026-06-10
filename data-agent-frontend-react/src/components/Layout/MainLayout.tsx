@@ -128,6 +128,21 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     loadAgents();
   }, []);
 
+  // Sync selectedAgentId with URL agentId parameter
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const agentIdFromUrl = urlParams.get('agentId');
+    if (agentIdFromUrl) {
+      const agentId = parseInt(agentIdFromUrl, 10);
+      if (!isNaN(agentId)) {
+        setSelectedAgentId(agentId);
+      }
+    } else if (agents.length > 0 && !selectedAgentId) {
+      // If no agentId in URL and no selected agent, use the first one
+      setSelectedAgentId(agents[0].id);
+    }
+  }, [location.search, agents]);
+
   const loadAgents = async () => {
     try {
       const list = await agentService.list();
@@ -156,7 +171,10 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (location.pathname.startsWith('/agent/') && location.pathname !== '/agent/new') {
       navigate(`/agent/${value}`);
     } else if (location.pathname !== '/agent/new') {
-      navigate(`${location.pathname}?agentId=${value}`);
+      // Update URL with new agentId
+      const url = new URL(window.location.href);
+      url.searchParams.set('agentId', value.toString());
+      navigate(`${location.pathname}${url.search ? '?' + url.search.slice(1) : ''}`);
     }
   };
 

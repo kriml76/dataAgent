@@ -259,6 +259,8 @@
 </template>
 
 <script>
+  import request from '@/utils/request';
+
   export default {
     name: 'AgentPromptConfig',
     props: {
@@ -327,10 +329,9 @@
         try {
           this.loading = true;
           const query = this.agentId ? `?agentId=${this.agentId}` : '';
-          const response = await fetch(
+          const result = await request.get(
             `/api/prompt-config/list-by-type/${this.promptType}${query}`,
           );
-          const result = await response.json();
           if (result.success) {
             this.optimizationConfigs = result.data || [];
             // 如果配置列表为空，自动关闭批量操作面板
@@ -363,15 +364,7 @@
             configData.id = this.editingConfig.id;
           }
 
-          const response = await fetch('/api/prompt-config/save', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(configData),
-          });
-
-          const result = await response.json();
+          const result = await request.post('/api/prompt-config/save', configData);
           if (result.success) {
             this.showMessage(result.message || '保存成功', 'success');
             this.closeDialog();
@@ -391,8 +384,7 @@
             ? `/api/prompt-config/${config.id}/disable`
             : `/api/prompt-config/${config.id}/enable`;
 
-          const response = await fetch(url, { method: 'POST' });
-          const result = await response.json();
+          const result = await request.post(url);
 
           if (result.success) {
             this.showMessage(result.message, 'success');
@@ -412,10 +404,7 @@
         }
 
         try {
-          const response = await fetch(`/api/prompt-config/${configId}`, {
-            method: 'DELETE',
-          });
-          const result = await response.json();
+          const result = await request.delete(`/api/prompt-config/${configId}`);
 
           if (result.success) {
             this.showMessage(result.message, 'success');
@@ -459,15 +448,10 @@
         if (this.selectedConfigs.length === 0) return;
 
         try {
-          const response = await fetch('/api/prompt-config/batch-enable', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(this.selectedConfigs),
-          });
-
-          const result = await response.json();
+          const result = await request.post(
+            '/api/prompt-config/batch-enable',
+            this.selectedConfigs,
+          );
           if (result.success) {
             this.showMessage(result.message, 'success');
             this.loadOptimizationConfigs();
@@ -485,15 +469,10 @@
         if (this.selectedConfigs.length === 0) return;
 
         try {
-          const response = await fetch('/api/prompt-config/batch-disable', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(this.selectedConfigs),
-          });
-
-          const result = await response.json();
+          const result = await request.post(
+            '/api/prompt-config/batch-disable',
+            this.selectedConfigs,
+          );
           if (result.success) {
             this.showMessage(result.message, 'success');
             this.loadOptimizationConfigs();
@@ -535,18 +514,10 @@
 
       async updatePriority() {
         try {
-          const response = await fetch(
+          const result = await request.post(
             `/api/prompt-config/${this.editingPriorityConfig.id}/priority`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ priority: this.priorityForm.priority }),
-            },
+            { priority: this.priorityForm.priority },
           );
-
-          const result = await response.json();
           if (result.success) {
             this.showMessage('优先级更新成功', 'success');
             this.loadOptimizationConfigs();
