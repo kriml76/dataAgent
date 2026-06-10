@@ -27,6 +27,7 @@ import KnowledgeSemanticModelsPage from '@/pages/knowledge/KnowledgeSemanticMode
 import SystemAgentsPage from '@/pages/system/SystemAgentsPage';
 import ModelConfigPage from '@/pages/system/ModelConfigPage';
 import DataSourcesPage from '@/pages/system/datasources/DataSourcesPage';
+import AccessApiPage from '@/pages/system/AccessApiPage';
 import PromptConfigPage from '@/pages/prompt-config/PromptConfigPage';
 
 function AppRouter() {
@@ -56,6 +57,7 @@ function AppRouter() {
         <Route path="/system/agents" element={<MainLayout><SystemAgentsPage /></MainLayout>} />
         <Route path="/system/model-config" element={<MainLayout><ModelConfigPage /></MainLayout>} />
         <Route path="/system/data-sources" element={<MainLayout><DataSourcesPage /></MainLayout>} />
+        <Route path="/system/access-api" element={<MainLayout><AccessApiPage /></MainLayout>} />
         
         {/* Prompt config with layout */}
         <Route path="/prompt-config" element={<MainLayout><PromptConfigPage /></MainLayout>} />

@@ -32,6 +32,7 @@ import {
   FileTextOutlined,
   SaveOutlined,
   BranchesOutlined,
+  KeyOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import agentService from '@/services/agent';
@@ -59,6 +60,7 @@ const routeTitleMap: Record<string, string> = {
   '/knowledge/semantic-models': '语义模型配置',
   '/system/data-sources': '数据连接',
   '/system/model-config': '模型配置',
+  '/system/access-api': 'API 访问配置',
   '/system/settings': '通用设置',
   '/agent/new': 'Create Agent',
 };
@@ -190,6 +192,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         { key: '/knowledge/semantic-models', icon: <BranchesOutlined />, label: '语义模型配置' },
       ],
     },
+   
     {
       key: 'system',
       icon: <DatabaseOutlined style={{ filter: 'drop-shadow(0 0 4px #00f5ff)' }} />,
@@ -199,6 +202,11 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         { key: '/system/data-sources', icon: <DatabaseOutlined />, label: '数据连接' },
         { key: '/system/model-config', icon: <CodeSandboxOutlined />, label: '模型配置' },
       ],
+    },
+     {
+      key: '/system/access-api',
+      icon: <KeyOutlined style={{ filter: 'drop-shadow(0 0 4px #00f5ff)' }} />,
+      label: 'API 访问配置',
     },
   ];
 
