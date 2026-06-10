@@ -29,13 +29,15 @@ import ModelConfigPage from '@/pages/system/ModelConfigPage';
 import DataSourcesPage from '@/pages/system/datasources/DataSourcesPage';
 import AccessApiPage from '@/pages/system/AccessApiPage';
 import PromptConfigPage from '@/pages/prompt-config/PromptConfigPage';
+import LoginPage from '@/pages/LoginPage';
 
 function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Redirect root to agent/new */}
-        <Route path="/" element={<Navigate to="/agent/new" replace />} />
+        {/* Login page as default route */}
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/login" element={<LoginPage />} />
         
         {/* Chat page with layout */}
         <Route path="/chat" element={<MainLayout><ChatPage /></MainLayout>} />
