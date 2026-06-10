@@ -63,7 +63,7 @@ const DataSourcesPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const agentId = searchParams.get('agentId');
 
-  // Main table states
+  // Main table states (智能体关联的数据源)
   const [dataSource, setDataSource] = useState<Datasource[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -86,7 +86,9 @@ const DataSourcesPage: React.FC = () => {
   const [loadingTablesId, setLoadingTablesId] = useState<number | null>(null);
   const [tableFetchError, setTableFetchError] = useState<Record<number, boolean>>({});
   const [updatingTablesId, setUpdatingTablesId] = useState<number | null>(null);
-  const [agentDatasourceList, setAgentDatasourceList] = useState<any[]>([]);
+  
+  // 所有数据源列表（用于选择已有数据源对话框）
+  const [allDatasource, setAllDatasource] = useState<Datasource[]>([]);
   
   // Foreign key dialog states
   const [fkDialogVisible, setFkDialogVisible] = useState(false);
@@ -139,14 +141,22 @@ const DataSourcesPage: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      // 加载所有数据源（用于选择已有数据源）
-      const allData = await datasourceService.getAllDatasource();
-      setDataSource(allData);
       
-      // 如果有智能体ID，加载智能体的数据源列表
+      // 1. 先加载所有数据源列表（用于选择已有数据源对话框）
+      const allData = await datasourceService.getAllDatasource();
+      setAllDatasource(allData);
+      
+      // 2. 如果有智能体ID，加载智能体关联的数据源（主列表显示的数据）
       if (agentId) {
         const agentDatasource = await agentDatasourceService.getAgentDatasource(Number(agentId));
-        setAgentDatasourceList(agentDatasource || []);
+        
+        // 将智能体数据源转换为主表需要的格式，并设置状态
+        const mappedDatasource = agentDatasource.map((item: any) => {
+          const datasourceItem = { ...item.datasource };
+          datasourceItem.status = item.isActive === 1 ? 'active' : 'inactive';
+          return datasourceItem;
+        });
+        setDataSource(mappedDatasource);
         
         // 初始化已选择的表
         const newSelectedTables: Record<number, string[]> = {};
@@ -274,9 +284,9 @@ const DataSourcesPage: React.FC = () => {
     setTogglingStatusId(item.id);
     const isActive = item.status !== 'active';
     try {
-      const res = await agentDatasourceService.toggleDatasourceForAgent(Number(agentId), {
+      const res = await agentDatasourceService.toggleDatasourceForAgent(agentId, {
         datasourceId: item.id,
-        isActive: isActive ? 1 : 0,
+        isActive: isActive,
       });
       if (res.success) {
         message.success(isActive ? '已启用' : '已禁用');
@@ -291,8 +301,8 @@ const DataSourcesPage: React.FC = () => {
     }
   };
 
-  // Delete function
-  const handleDelete = async (item: Datasource) => {
+  // 移除智能体与数据源的关联
+  const handleRemoveDatasource = async (item: Datasource) => {
     if (!item.id) return;
     if (!agentId) {
       message.error('缺少智能体ID');
@@ -308,6 +318,22 @@ const DataSourcesPage: React.FC = () => {
       }
     } catch {
       message.error('移除失败');
+    }
+  };
+
+  // 删除数据源本身（用于选择已有数据源对话框）
+  const handleDeleteDatasource = async (item: Datasource) => {
+    if (!item.id) return;
+    try {
+      const res = await datasourceService.deleteDatasource(item.id);
+      if (res.success) {
+        message.success('删除成功');
+        loadData();
+      } else {
+        message.error(res.message || '删除失败');
+      }
+    } catch {
+      message.error('删除失败');
     }
   };
 
@@ -507,14 +533,11 @@ const DataSourcesPage: React.FC = () => {
     try {
       const tables = await datasourceService.getDatasourceTables(datasourceId);
       setTableLists(prev => ({ ...prev, [datasourceId]: tables || [] }));
-      // 如果没有初始化已选择的表，则使用当前已选择的表
+      // 确保已选择的表初始化
       if (!selectedTables[datasourceId]) {
-        const agentDatasource = agentDatasourceList.find(
-          item => item.datasource?.id === datasourceId,
-        );
         setSelectedTables(prev => ({
           ...prev,
-          [datasourceId]: agentDatasource?.selectTables || [],
+          [datasourceId]: [],
         }));
       }
       message.success(`成功加载 ${tables.length} 个表`);
@@ -728,7 +751,7 @@ const DataSourcesPage: React.FC = () => {
           <Popconfirm
             title="移除确认"
             description={`确定要移除数据源「${record.name}」吗？`}
-            onConfirm={() => handleDelete(record)}
+            onConfirm={() => handleRemoveDatasource(record)}
             okText="移除"
             cancelText="取消"
             okButtonProps={{ danger: true }}
@@ -1045,7 +1068,7 @@ const DataSourcesPage: React.FC = () => {
                 children: (
                   <>
                     <Table
-                      dataSource={dataSource}
+                      dataSource={allDatasource}
                       rowKey="id"
                       rowSelection={{
                         type: 'radio',
@@ -1077,7 +1100,7 @@ const DataSourcesPage: React.FC = () => {
                             <Popconfirm
                               title="确认删除"
                               description="删除后无法恢复，确定要删除该数据源吗？"
-                              onConfirm={() => handleDelete(record)}
+                              onConfirm={() => handleDeleteDatasource(record)}
                             >
                               <Button size="small" danger>
                                 删除
