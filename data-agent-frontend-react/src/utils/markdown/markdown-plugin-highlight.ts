@@ -61,7 +61,7 @@ const highlightPlugin = (md: MarkdownIt) => {
     return `<div class="code-block-wrapper">
       <div class="code-block-header">
         <span class="code-language">${escapeAttr(langLabel)}</span>
-        <button class="code-copy-button" onclick="window.copyCodeBlock(this)" data-code="${escapeAttr(code)}">
+        <button class="code-copy-button" data-code="${escapeAttr(code)}">
           复制
         </button>
       </div>

@@ -50,8 +50,9 @@ const ChatMarkdownReport: React.FC<ChatMarkdownReportProps> = ({ content }) => {
   const renderMarkdown = useCallback((md: string): string => {
     if (!md) return '';
     return DOMPurify.sanitize(renderMarkdownContent(md), {
-      ADD_TAGS: ['div', 'pre', 'code'],
-      ADD_ATTR: ['style', 'class', 'data-echarts-config'],
+      ADD_TAGS: ['div', 'pre', 'code', 'button'],
+      ADD_ATTR: ['style', 'class', 'data-echarts-config', 'onclick', 'data-code'],
+      ALLOW_DATA_ATTR: true,
     }) as string;
   }, []);
 

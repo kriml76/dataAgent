@@ -13,8 +13,9 @@ import './ChatMessageList.css';
 const TIMELINE_ABSORBED_TYPES = new Set(['result-set', 'markdown-report', 'html']);
 
 const SANITIZE_OPTIONS = {
-  ADD_TAGS: ['div', 'pre', 'code'],
-  ADD_ATTR: ['class', 'style'],
+  ADD_TAGS: ['div', 'pre', 'code', 'button'],
+  ADD_ATTR: ['class', 'style', 'onclick', 'data-code'],
+  ALLOW_DATA_ATTR: true,
 };
 
 function renderMarkdown(content: string): string {

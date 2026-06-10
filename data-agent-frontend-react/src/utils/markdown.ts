@@ -32,41 +32,44 @@ export function renderMarkdownContent(content: string): string {
   return md.render(content);
 }
 
-// Copy code block function
-declare global {
-  interface Window {
-    copyCodeBlock?: (btn: HTMLElement) => void;
-  }
+// Copy code block function using event delegation
+function copyCodeBlock(btn: HTMLElement) {
+  const code = btn.getAttribute('data-code');
+  if (!code) return;
+
+  const originalText = btn.textContent;
+  const parser = new DOMParser();
+  const decodedCode = parser
+    .parseFromString(`<div>${code}</div>`, 'text/html')
+    .querySelector('div')?.textContent;
+
+  if (!decodedCode) return;
+
+  navigator.clipboard
+    .writeText(decodedCode)
+    .then(() => {
+      btn.textContent = '已复制!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.classList.remove('copied');
+      }, 2000);
+    })
+    .catch(() => {
+      btn.textContent = '复制失败';
+      setTimeout(() => {
+        btn.textContent = originalText;
+      }, 2000);
+    });
 }
 
-if (typeof window !== 'undefined' && !window.copyCodeBlock) {
-  window.copyCodeBlock = (btn: HTMLElement) => {
-    const code = btn.getAttribute('data-code');
-    if (!code) return;
-
-    const originalText = btn.textContent;
-    const parser = new DOMParser();
-    const decodedCode = parser
-      .parseFromString(`<div>${code}</div>`, 'text/html')
-      .querySelector('div')?.textContent;
-
-    if (!decodedCode) return;
-
-    navigator.clipboard
-      .writeText(decodedCode)
-      .then(() => {
-        btn.textContent = '已复制!';
-        btn.classList.add('copied');
-        setTimeout(() => {
-          btn.textContent = originalText;
-          btn.classList.remove('copied');
-        }, 2000);
-      })
-      .catch(() => {
-        btn.textContent = '复制失败';
-        setTimeout(() => {
-          btn.textContent = originalText;
-        }, 2000);
-      });
-  };
+// Initialize event delegation for copy buttons
+if (typeof window !== 'undefined') {
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('code-copy-button') || target.closest('.code-copy-button')) {
+      const btn = target.classList.contains('code-copy-button') ? target : target.closest('.code-copy-button') as HTMLElement;
+      copyCodeBlock(btn);
+    }
+  });
 }
