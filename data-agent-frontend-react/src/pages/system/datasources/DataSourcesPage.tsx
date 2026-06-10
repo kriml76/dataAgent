@@ -122,7 +122,7 @@ const DataSourcesPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [agentId]);
 
   // Watch expanded rows to load tables
   useEffect(() => {
@@ -141,6 +141,12 @@ const DataSourcesPage: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
+      
+      // 重置展开行相关状态
+      setExpandedRowKeys([]);
+      setTableLists({});
+      setSelectedTables({});
+      setTableFetchError({});
       
       // 1. 先加载所有数据源列表（用于选择已有数据源对话框）
       const allData = await datasourceService.getAllDatasource();
@@ -166,6 +172,9 @@ const DataSourcesPage: React.FC = () => {
           }
         });
         setSelectedTables(newSelectedTables);
+      } else {
+        // 如果没有 agentId，清空数据源列表
+        setDataSource([]);
       }
     } catch (error) {
       console.error('Failed to load datasources:', error);
