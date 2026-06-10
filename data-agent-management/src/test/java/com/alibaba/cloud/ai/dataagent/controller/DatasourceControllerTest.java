@@ -47,11 +47,14 @@ class DatasourceControllerTest {
 	@Mock
 	private DatasourceService datasourceService;
 
+	@Mock
+	private com.alibaba.cloud.ai.dataagent.service.schema.TableImportService tableImportService;
+
 	private DatasourceController datasourceController;
 
 	@BeforeEach
 	void setUp() {
-		datasourceController = new DatasourceController(datasourceService);
+		datasourceController = new DatasourceController(datasourceService, tableImportService);
 	}
 
 	@Test

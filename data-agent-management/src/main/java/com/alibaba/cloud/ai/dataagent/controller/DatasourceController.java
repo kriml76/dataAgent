@@ -24,7 +24,9 @@ import com.alibaba.cloud.ai.dataagent.enums.BizDataSourceTypeEnum;
 import com.alibaba.cloud.ai.dataagent.exception.InternalServerException;
 import com.alibaba.cloud.ai.dataagent.exception.InvalidInputException;
 import com.alibaba.cloud.ai.dataagent.service.datasource.DatasourceService;
+import com.alibaba.cloud.ai.dataagent.service.schema.TableImportService;
 import com.alibaba.cloud.ai.dataagent.vo.ApiResponse;
+import com.alibaba.cloud.ai.dataagent.vo.TableImportResult;
 import jakarta.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +34,10 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,8 +47,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 // todo: 不要吞掉所有异常，可以直接抛出，写一个Advice拦截异常并做日志
 @Slf4j
@@ -54,6 +62,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class DatasourceController {
 
 	private final DatasourceService datasourceService;
+
+	private final TableImportService tableImportService;
 
 	/**
 	 * Get all data source list
@@ -288,6 +298,43 @@ public class DatasourceController {
 			log.error("Failed to save logical relations for datasource: {}", datasourceId, e);
 			throw new InternalServerException("批量保存逻辑外键失败：" + e.getMessage());
 		}
+	}
+
+	/**
+	 * 从Excel导入表结构和数据
+	 */
+	@PostMapping(value = "/{id}/import-table", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public Mono<ApiResponse<TableImportResult>> importTableFromExcel(@PathVariable Integer id,
+			@RequestPart("file") FilePart file) {
+		String filename = file.filename();
+		log.info("接收到Excel导入请求: datasourceId={}, filename={}", id, filename);
+
+		return DataBufferUtils.join(file.content()).flatMap(dataBuffer -> {
+			byte[] bytes = new byte[dataBuffer.readableByteCount()];
+			dataBuffer.read(bytes);
+			DataBufferUtils.release(dataBuffer);
+
+			return Mono.fromCallable(() -> {
+				try (java.io.ByteArrayInputStream inputStream = new java.io.ByteArrayInputStream(bytes)) {
+					TableImportResult result = tableImportService.importTableFromExcel(inputStream, filename, id);
+					if (result.getSuccess()) {
+						return ApiResponse.success(result.getMessage(), result);
+					} else {
+						return ApiResponse.error(result.getMessage() != null ? result.getMessage() : "导入失败", result);
+					}
+				}
+			}).subscribeOn(Schedulers.boundedElastic());
+		}).onErrorResume(IllegalArgumentException.class, e -> {
+			log.error("Excel导入参数错误: {}", e.getMessage());
+			TableImportResult errorResult = TableImportResult.builder().success(false).build();
+			errorResult.addError(e.getMessage());
+			return Mono.just(ApiResponse.error("Excel导入失败: " + e.getMessage(), errorResult));
+		}).onErrorResume(Exception.class, e -> {
+			log.error("Excel导入失败", e);
+			TableImportResult errorResult = TableImportResult.builder().success(false).build();
+			errorResult.addError(e.getMessage());
+			return Mono.just(ApiResponse.error("Excel导入失败: " + e.getMessage(), errorResult));
+		});
 	}
 
 	private Datasource checkDatasourceExists(Integer id) {

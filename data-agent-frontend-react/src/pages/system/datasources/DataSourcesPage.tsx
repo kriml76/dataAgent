@@ -45,10 +45,16 @@ import {
   UpOutlined,
   TableOutlined,
   LinkOutlined,
+  UploadOutlined,
+  FileExcelOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import datasourceService, { type Datasource, type LogicalRelation } from '@/services/datasource';
 import agentDatasourceService from '@/services/agentDatasource';
+import { importTableFromExcel, downloadTableImportTemplate } from '@/services/datasource/tableImport';
+import type { TableImportResult } from '@/types/tableImport';
 import { useSearchParams } from 'react-router-dom';
+import { Upload, Alert } from 'antd';
 
 const DataSourcesPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -98,6 +104,12 @@ const DataSourcesPage: React.FC = () => {
     targetColumnName: '',
     relationType: '1:N',
   });
+
+  // Table import dialog states
+  const [importDialogVisible, setImportDialogVisible] = useState(false);
+  const [importDatasourceId, setImportDatasourceId] = useState<number>(0);
+  const [importFile, setImportFile] = useState<any>(null);
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -248,6 +260,55 @@ const DataSourcesPage: React.FC = () => {
     await loadLogicalRelations(item.id);
     await loadTables(item.id);
     resetFkForm();
+  };
+
+  // Table import functions
+  const openImportDialog = (datasourceId: number) => {
+    setImportDatasourceId(datasourceId);
+    setImportDialogVisible(true);
+    setImportFile(null);
+  };
+
+  const downloadTemplate = async () => {
+    try {
+      await downloadTableImportTemplate();
+      message.success('模板下载成功');
+    } catch (error) {
+      console.error('Download template failed:', error);
+      message.error('模板下载失败');
+    }
+  };
+
+  const executeImport = async () => {
+    if (!importFile || !importFile.originFileObj) {
+      message.warning('请先选择 Excel 文件');
+      return;
+    }
+
+    setImporting(true);
+    try {
+      const result: TableImportResult = await importTableFromExcel(
+        importFile.originFileObj as File,
+        importDatasourceId
+      );
+
+      if (result.success) {
+        message.success(result.message || `表导入成功,共插入 ${result.rowCount} 行数据`);
+        setImportDialogVisible(false);
+        setImportFile(null);
+        // 刷新表列表
+        if (tableLists[importDatasourceId]) {
+          await fetchTablesForDatasource(importDatasourceId);
+        }
+      } else {
+        message.error(result.errors?.[0] || '导入失败');
+      }
+    } catch (error) {
+      console.error('Excel import failed:', error);
+      message.error('Excel 导入失败');
+    } finally {
+      setImporting(false);
+    }
   };
 
   const loadLogicalRelations = async (datasourceId: number) => {
@@ -553,6 +614,14 @@ const DataSourcesPage: React.FC = () => {
             onClick={() => handleTestConnection(record)}
           >
             测试连接
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            icon={<UploadOutlined />}
+            onClick={() => record.id && openImportDialog(record.id)}
+          >
+            导入表
           </Button>
           <Button
             type="link"
@@ -1042,6 +1111,77 @@ const DataSourcesPage: React.FC = () => {
               onClick={handleAddRelation}
             >
               添加关系
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Table Import Dialog */}
+      <Modal
+        title={
+          <Space>
+            <UploadOutlined style={{ color: '#1677ff' }} />
+            <span>从Excel导入表</span>
+          </Space>
+        }
+        open={importDialogVisible}
+        onCancel={() => setImportDialogVisible(false)}
+        footer={null}
+        width={760}
+      >
+        <div style={{ padding: '16px 0' }}>
+          <Alert
+            message="导入说明"
+            description={
+              <div>
+                <div>1. 请下载模板并按照格式填写数据</div>
+                <div>2. 第一个Sheet定义表结构,第二个Sheet存放数据</div>
+                <div>3. 如果表已存在将会报错</div>
+                <div>4. 文件名将作为表名使用</div>
+              </div>
+            }
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+
+          <Button
+            icon={<DownloadOutlined />}
+            onClick={downloadTemplate}
+            style={{ marginRight: 8 }}
+          >
+            下载模板
+          </Button>
+
+          <Upload
+            maxCount={1}
+            beforeUpload={() => false}
+            onChange={({ fileList }) => {
+              if (fileList.length > 0) {
+                setImportFile(fileList[0]);
+              } else {
+                setImportFile(null);
+              }
+            }}
+            accept=".xlsx,.xls"
+          >
+            <Button icon={<FileExcelOutlined />}>选择Excel文件</Button>
+          </Upload>
+
+          {importFile && (
+            <div style={{ marginTop: 8, color: '#6b6b6b' }}>
+              已选择: {importFile.name}
+            </div>
+          )}
+
+          <div style={{ marginTop: 16 }}>
+            <Button
+              type="primary"
+              icon={<UploadOutlined />}
+              loading={importing}
+              onClick={executeImport}
+            >
+              开始导入
             </Button>
           </div>
         </div>
