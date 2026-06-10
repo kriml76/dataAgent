@@ -34,7 +34,7 @@ export interface AgentDatasource {
   /** 是否激活 */
   isActive: boolean;
   /** 选中的表列表 */
-  tables?: string[];
+  selectTables?: string[];
   /** 创建时间 */
   createTime?: string;
   /** 更新时间 */
@@ -61,7 +61,7 @@ interface UpdateDatasourceTablesDto {
   tables?: string[];
 }
 
-const BASE_URL_FUNC = (agentId: string) => `/api/agent/${agentId}/datasources`;
+const BASE_URL_FUNC = (agentId: string) => `/agent/${agentId}/datasources`;
 
 /**
  * @description 智能体数据源业务逻辑处理类

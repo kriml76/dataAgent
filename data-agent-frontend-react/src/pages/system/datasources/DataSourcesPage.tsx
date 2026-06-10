@@ -432,11 +432,13 @@ const DataSourcesPage: React.FC = () => {
     setInitLoading(true);
     try {
       const activeDatasource = await agentDatasourceService.getActiveAgentDatasource(Number(agentId));
+      console.log(activeDatasource);
       if (!activeDatasource) {
         message.error('当前智能体没有启用的数据源！请先添加并启用数据源');
         return;
       }
-      if (!activeDatasource.tables || activeDatasource.tables.length === 0) {
+      
+      if (!activeDatasource.selectTables || activeDatasource.selectTables.length === 0) {
         message.error('当前启用的数据源没有选择相应的数据表！请先选择数据表并更新');
         return;
       }
