@@ -17,7 +17,7 @@
 import apiClient from '@/utils/request';
 import type { TableImportResult } from '@/types/tableImport';
 
-const API_BASE_URL = '/api/datasource';
+const API_BASE_URL = '/datasource';
 
 /**
  * @description 从Excel导入表结构和数据
