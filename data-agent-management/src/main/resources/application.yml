@@ -79,3 +79,8 @@ logging:
     com.alibaba.cloud.ai.mapper: debug
     org.springframework.jdbc: debug
 
+# JWT配置
+jwt:
+  secret: ${JWT_SECRET:DataAgentSecretKey2026ForJWTTokenGenerationAndValidation}
+  expiration: ${JWT_EXPIRATION:7200}  # 2小时(秒)
+

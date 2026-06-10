@@ -29,7 +29,11 @@ const apiClient = axios.create({
 // 请求拦截器
 apiClient.interceptors.request.use(
   (config) => {
-    // 可以在这里添加 token 等认证信息
+    // 从localStorage获取Token
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -37,7 +41,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// 响应拦截器 - 直接返回 response.data
+// 响应拦截器 - 处理401未授权
 apiClient.interceptors.response.use(
   (response) => {
     return response.data;
@@ -46,7 +50,11 @@ apiClient.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          console.error('未授权，请重新登录');
+          console.error('未授权,请重新登录');
+          // 清除本地存储的Token
+          localStorage.removeItem('token');
+          // 跳转到登录页
+          window.location.href = '/login';
           break;
         case 403:
           console.error('拒绝访问');
@@ -61,7 +69,7 @@ apiClient.interceptors.response.use(
           console.error(`连接错误 ${error.response.status}`);
       }
     } else {
-      console.error('网络异常，请检查网络连接');
+      console.error('网络异常,请检查网络连接');
     }
     return Promise.reject(error);
   }

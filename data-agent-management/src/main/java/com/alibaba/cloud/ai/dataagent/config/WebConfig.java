@@ -33,6 +33,7 @@ import java.time.Duration;
 public class WebConfig implements WebFluxConfigurer {
 
 	private final FileStorageProperties fileStorageProperties;
+	private final AuthInterceptor authInterceptor;
 
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {

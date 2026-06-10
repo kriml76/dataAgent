@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Select, Avatar, Button, Divider, Badge } from 'antd';
+import { Layout, Menu, Select, Avatar, Button, Divider, Badge, Modal, message } from 'antd';
 import {
   MenuOutlined,
   RobotOutlined,
@@ -33,11 +33,14 @@ import {
   SaveOutlined,
   BranchesOutlined,
   KeyOutlined,
+  LogoutOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import agentService from '@/services/agent';
 import modelConfigService from '@/services/modelConfig';
 import type { Agent } from '@/services/agent';
+import { useAuthStore } from '@/stores/auth';
 
 const { Sider, Header, Content } = Layout;
 const { Option } = Select;
@@ -111,6 +114,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [selectedAgentId, setSelectedAgentId] = useState<number | undefined>(undefined);
   const navigate = useNavigate();
   const location = useLocation();
+  const { userInfo, clearAuth } = useAuthStore();
 
   const currentRouteTitle = React.useMemo(() => {
     if (location.pathname.startsWith('/agent/') && location.pathname !== '/agent/new') {
@@ -169,6 +173,20 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       return;
     }
     navigate(path);
+  };
+
+  const handleLogout = () => {
+    Modal.confirm({
+      title: '确认登出',
+      content: '您确定要退出登录吗?',
+      okText: '确认',
+      cancelText: '取消',
+      onOk: () => {
+        clearAuth();
+        navigate('/login');
+        message.success('已退出登录');
+      },
+    });
   };
 
   const menuItems = [
@@ -577,6 +595,46 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             }}>
               <ThunderboltOutlined style={{ marginRight: '8px' }} />
               POWER: 98.7%
+            </div>
+            
+            {/* 用户信息和登出按钮 */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '6px 12px',
+              background: 'rgba(0, 245, 255, 0.05)',
+              border: '1px solid rgba(0, 245, 255, 0.2)',
+            }}>
+              <Avatar 
+                size={32} 
+                icon={<UserOutlined />}
+                style={{
+                  backgroundColor: 'rgba(0, 245, 255, 0.2)',
+                  border: '1px solid #00f5ff',
+                }}
+              />
+              <span style={{
+                color: '#e0e0e5',
+                fontSize: '13px',
+                fontFamily: "'Rajdhani', sans-serif",
+                letterSpacing: '1px',
+              }}>
+                {userInfo?.nickname || userInfo?.username || 'User'}
+              </span>
+              <Button
+                type="text"
+                icon={<LogoutOutlined />}
+                onClick={handleLogout}
+                style={{
+                  color: '#ff4d4f',
+                  border: 'none',
+                  padding: '4px 8px',
+                }}
+                title="退出登录"
+              >
+                退出
+              </Button>
             </div>
           </div>
         </Header>

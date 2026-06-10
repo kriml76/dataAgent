@@ -17,6 +17,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { UserOutlined, LockOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import { login } from '@/services/auth';
+import { useAuthStore } from '@/stores/auth';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './LoginPage.css';
 
 /**
@@ -27,6 +30,9 @@ const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { setAuth } = useAuthStore();
 
   // 动态粒子背景效果
   useEffect(() => {
@@ -156,14 +162,28 @@ const LoginPage: React.FC = () => {
   const handleLogin = async (values: { username: string; password: string }) => {
     setLoading(true);
     
-    // 模拟登录请求
-    setTimeout(() => {
+    try {
+      const response = await login(values);
+      
+      if (response.success && response.data) {
+        const { token, userInfo } = response.data;
+        
+        // 保存认证信息到Store和localStorage
+        setAuth(token, userInfo);
+        
+        message.success('登录成功!');
+        
+        // 跳转到之前访问的页面或默认首页
+        const from = (location.state as any)?.from?.pathname || '/agent/new';
+        navigate(from);
+      } else {
+        message.error(response.message || '登录失败');
+      }
+    } catch (error: any) {
+      message.error(error.message || '登录失败,请检查网络连接');
+    } finally {
       setLoading(false);
-      message.success('登录成功！');
-      // TODO: 实际项目中这里应该调用真实的登录API
-      // 登录成功后跳转到首页或智能体页面
-      window.location.href = '/agent/new';
-    }, 1500);
+    }
   };
 
   return (

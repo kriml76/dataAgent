@@ -30,39 +30,94 @@ import DataSourcesPage from '@/pages/system/datasources/DataSourcesPage';
 import AccessApiPage from '@/pages/system/AccessApiPage';
 import PromptConfigPage from '@/pages/prompt-config/PromptConfigPage';
 import LoginPage from '@/pages/LoginPage';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Login page as default route */}
+        {/* 公开路由 - 不需要认证 */}
         <Route path="/" element={<LoginPage />} />
         <Route path="/login" element={<LoginPage />} />
         
-        {/* Chat page with layout */}
-        <Route path="/chat" element={<MainLayout><ChatPage /></MainLayout>} />
+        {/* 受保护路由 - 需要认证 */}
+        <Route path="/chat" element={
+          <ProtectedRoute>
+            <MainLayout><ChatPage /></MainLayout>
+          </ProtectedRoute>
+        } />
         
-        {/* Dashboard with layout */}
-        <Route path="/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <MainLayout><DashboardPage /></MainLayout>
+          </ProtectedRoute>
+        } />
         
-        {/* Agent routes with layout */}
-        <Route path="/agent" element={<MainLayout><AgentListPage /></MainLayout>} />
-        <Route path="/agent/new" element={<MainLayout><NewAgentPage /></MainLayout>} />
-        <Route path="/agent/:id" element={<MainLayout><AgentDetailPage /></MainLayout>} />
+        <Route path="/agent" element={
+          <ProtectedRoute>
+            <MainLayout><AgentListPage /></MainLayout>
+          </ProtectedRoute>
+        } />
         
-        {/* Knowledge routes with layout */}
-        <Route path="/knowledge/agents" element={<MainLayout><KnowledgeAgentsPage /></MainLayout>} />
-        <Route path="/knowledge/business" element={<MainLayout><KnowledgeBusinessPage /></MainLayout>} />
-        <Route path="/knowledge/semantic-models" element={<MainLayout><KnowledgeSemanticModelsPage /></MainLayout>} />
+        <Route path="/agent/new" element={
+          <ProtectedRoute>
+            <MainLayout><NewAgentPage /></MainLayout>
+          </ProtectedRoute>
+        } />
         
-        {/* System routes with layout */}
-        <Route path="/system/agents" element={<MainLayout><SystemAgentsPage /></MainLayout>} />
-        <Route path="/system/model-config" element={<MainLayout><ModelConfigPage /></MainLayout>} />
-        <Route path="/system/data-sources" element={<MainLayout><DataSourcesPage /></MainLayout>} />
-        <Route path="/system/access-api" element={<MainLayout><AccessApiPage /></MainLayout>} />
+        <Route path="/agent/:id" element={
+          <ProtectedRoute>
+            <MainLayout><AgentDetailPage /></MainLayout>
+          </ProtectedRoute>
+        } />
         
-        {/* Prompt config with layout */}
-        <Route path="/prompt-config" element={<MainLayout><PromptConfigPage /></MainLayout>} />
+        <Route path="/knowledge/agents" element={
+          <ProtectedRoute>
+            <MainLayout><KnowledgeAgentsPage /></MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/knowledge/business" element={
+          <ProtectedRoute>
+            <MainLayout><KnowledgeBusinessPage /></MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/knowledge/semantic-models" element={
+          <ProtectedRoute>
+            <MainLayout><KnowledgeSemanticModelsPage /></MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/system/agents" element={
+          <ProtectedRoute>
+            <MainLayout><SystemAgentsPage /></MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/system/model-config" element={
+          <ProtectedRoute>
+            <MainLayout><ModelConfigPage /></MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/system/data-sources" element={
+          <ProtectedRoute>
+            <MainLayout><DataSourcesPage /></MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/system/access-api" element={
+          <ProtectedRoute>
+            <MainLayout><AccessApiPage /></MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/prompt-config" element={
+          <ProtectedRoute>
+            <MainLayout><PromptConfigPage /></MainLayout>
+          </ProtectedRoute>
+        } />
       </Routes>
     </BrowserRouter>
   );

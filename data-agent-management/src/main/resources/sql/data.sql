@@ -42,3 +42,7 @@ INSERT IGNORE INTO `agent_datasource` (`id`, `agent_id`, `datasource_id`, `is_ac
 (2, 2, 1, 0, NOW(), NOW()),  -- 销售数据分析智能体使用生产环境数据库
 (3, 3, 1, 0, NOW(), NOW()),  -- 财务报表智能体使用生产环境数据库
 (4, 4, 1, 0, NOW(), NOW());  -- 库存管理智能体使用生产环境数据库
+
+-- 插入默认管理员账户 (密码: admin123, BCrypt加密)
+INSERT IGNORE INTO `user` (`username`, `password`, `nickname`, `status`) 
+VALUES ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '管理员', 1);
