@@ -15,6 +15,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Card,
   Button,
@@ -57,8 +58,9 @@ const PromptConfigPage: React.FC = () => {
   const [form] = Form.useForm();
   const [priorityForm] = Form.useForm();
 
-  // 智能体 ID 和提示词类型（可以从路由或 props 获取）
-  const agentId = undefined; // 可选的智能体 ID
+  // 从 URL 获取智能体 ID
+  const [searchParams] = useSearchParams();
+  const agentId = searchParams.get('agentId');
   const promptType = 'report-generator'; // 默认提示词类型
 
   // 加载配置列表
@@ -82,7 +84,7 @@ const PromptConfigPage: React.FC = () => {
 
   useEffect(() => {
     loadConfigs();
-  }, []);
+  }, [agentId]);
 
   // 保存配置
   const handleSave = async () => {
