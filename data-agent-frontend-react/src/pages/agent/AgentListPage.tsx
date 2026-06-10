@@ -65,7 +65,7 @@ const AgentListPage: React.FC = () => {
               <Col xs={24} sm={12} lg={8} key={agent.id}>
                 <Card
                   hoverable
-                  onClick={() => navigate(`/agent/${agent.id}`)}
+                  onClick={() => navigate(`/agent?agentId=${agent.id}`)}
                   style={{ height: '100%' }}
                   bodyStyle={{ padding: 24 }}
                 >
