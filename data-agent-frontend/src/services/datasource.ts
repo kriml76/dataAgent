@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import axios from 'axios';
+import request from '@/utils/request';
 import { ApiResponse } from '@/services/common';
 
 export interface Datasource {
@@ -65,66 +65,52 @@ class DatasourceService {
     if (status) params.append('status', status);
     if (type) params.append('type', type);
 
-    const response = await axios.get<Datasource[]>(
+    return request.get<Datasource[]>(
       `${API_BASE_URL}${params.toString() ? `?${params.toString()}` : ''}`,
     );
-    return response.data;
   }
 
   // 2. 根据 ID 获取数据源详情
   async getDatasourceById(id: number): Promise<Datasource | null> {
     try {
-      const response = await axios.get<Datasource>(`${API_BASE_URL}/${id}`);
-      return response.data;
+      return await request.get<Datasource>(`${API_BASE_URL}/${id}`);
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        return null;
-      }
-      throw error;
+      return null;
     }
   }
 
   // 3. 获取数据源的表列表
   async getDatasourceTables(id: number): Promise<string[]> {
     try {
-      const response = await axios.get<string[]>(`${API_BASE_URL}/${id}/tables`);
-      return response.data;
+      return await request.get<string[]>(`${API_BASE_URL}/${id}/tables`);
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 400) {
-        return [];
-      }
-      throw error;
+      return [];
     }
   }
 
   // 4. 创建数据源
   async createDatasource(datasource: Datasource): Promise<Datasource> {
-    const response = await axios.post<Datasource>(API_BASE_URL, datasource);
-    return response.data;
+    return request.post<Datasource>(API_BASE_URL, datasource);
   }
 
   // 5. 更新数据源
   async updateDatasource(id: number, datasource: Datasource): Promise<Datasource> {
-    const response = await axios.put<Datasource>(`${API_BASE_URL}/${id}`, datasource);
-    return response.data;
+    return request.put<Datasource>(`${API_BASE_URL}/${id}`, datasource);
   }
 
   // 6. 删除数据源
   async deleteDatasource(id: number): Promise<ApiResponse<void>> {
-    const response = await axios.delete<ApiResponse<void>>(`${API_BASE_URL}/${id}`);
-    return response.data;
+    return request.delete<ApiResponse<void>>(`${API_BASE_URL}/${id}`);
   }
 
   // 7. 测试数据源连接
   async testConnection(id: number): Promise<ApiResponse<boolean>> {
-    const response = await axios.post<ApiResponse<boolean>>(`${API_BASE_URL}/${id}/test`);
-    return response.data;
+    return request.post<ApiResponse<boolean>>(`${API_BASE_URL}/${id}/test`);
   }
 
   // 8. 获取所有可用的数据源类型
   async getDatasourceTypes(): Promise<ApiResponse<DatasourceType[]>> {
-    const response = await axios.get<ApiResponse<DatasourceType[]>>(`${API_BASE_URL}/types`);
-    return response.data;
+    return request.get<ApiResponse<DatasourceType[]>>(`${API_BASE_URL}/types`);
   }
 }
 

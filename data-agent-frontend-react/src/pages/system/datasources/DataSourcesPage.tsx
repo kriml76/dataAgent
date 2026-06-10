@@ -33,6 +33,7 @@ import {
   Avatar,
   Checkbox,
   Divider,
+  Radio,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -1132,28 +1133,62 @@ const DataSourcesPage: React.FC = () => {
         width={760}
       >
         <div style={{ padding: '16px 0' }}>
+          <div style={{ marginBottom: 16 }}>
+            <Radio.Group
+              value={importMode}
+              onChange={(e) => setImportMode(e.target.value)}
+              style={{ width: '100%' }}
+            >
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Radio value="auto">
+                  <strong>快速模式（推荐）</strong>
+                  <div style={{ color: '#6b6b6b', fontSize: 12, marginLeft: 22 }}>
+                    第一行作为字段名,自动识别字段类型,无需下载模板
+                  </div>
+                </Radio>
+                <Radio value="standard">
+                  <strong>标准模式</strong>
+                  <div style={{ color: '#6b6b6b', fontSize: 12, marginLeft: 22 }}>
+                    需下载模板填写,第一个Sheet定义表结构,第二个Sheet存放数据
+                  </div>
+                </Radio>
+              </Space>
+            </Radio.Group>
+          </div>
+
           <Alert
-            message="导入说明"
+            message={importMode === 'auto' ? '快速模式说明' : '标准模式说明'}
             description={
-              <div>
-                <div>1. 请下载模板并按照格式填写数据</div>
-                <div>2. 第一个Sheet定义表结构,第二个Sheet存放数据</div>
-                <div>3. 如果表已存在将会报错</div>
-                <div>4. 文件名将作为表名使用</div>
-              </div>
+              importMode === 'auto' ? (
+                <div>
+                  <div>1. 确保Excel第一行是字段名,从第二行开始是数据</div>
+                  <div>2. 系统会根据前几行数据自动推断字段类型</div>
+                  <div>3. 文件名将作为表名使用</div>
+                  <div>4. 如果表已存在将会报错</div>
+                </div>
+              ) : (
+                <div>
+                  <div>1. 请下载模板并按照格式填写数据</div>
+                  <div>2. 第一个Sheet定义表结构,第二个Sheet存放数据</div>
+                  <div>3. 如果表已存在将会报错</div>
+                  <div>4. 文件名将作为表名使用</div>
+                </div>
+              )
             }
             type="info"
             showIcon
             style={{ marginBottom: 16 }}
           />
 
-          <Button
-            icon={<DownloadOutlined />}
-            onClick={downloadTemplate}
-            style={{ marginRight: 8 }}
-          >
-            下载模板
-          </Button>
+          {importMode === 'standard' && (
+            <Button
+              icon={<DownloadOutlined />}
+              onClick={downloadTemplate}
+              style={{ marginRight: 8 }}
+            >
+              下载模板
+            </Button>
+          )}
 
           <Upload
             maxCount={1}

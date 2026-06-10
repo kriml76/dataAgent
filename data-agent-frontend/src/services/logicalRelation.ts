@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import axios from 'axios';
+import request from '@/utils/request';
 import { ApiResponse } from '@/services/common';
 
 // 逻辑外键接口定义
@@ -38,10 +38,10 @@ class LogicalRelationService {
   // 获取指定数据源的逻辑外键列表
   async getLogicalRelations(datasourceId: number): Promise<LogicalRelation[]> {
     try {
-      const response = await axios.get<ApiResponse<LogicalRelation[]>>(
+      const response = await request.get<ApiResponse<LogicalRelation[]>>(
         `${API_BASE_URL}/${datasourceId}/logical-relations`,
       );
-      return response.data.data || [];
+      return response.data || [];
     } catch (error) {
       console.error('Failed to get logical relations:', error);
       return [];
@@ -57,11 +57,11 @@ class LogicalRelationService {
     >,
   ): Promise<LogicalRelation | null> {
     try {
-      const response = await axios.post<ApiResponse<LogicalRelation>>(
+      const response = await request.post<ApiResponse<LogicalRelation>>(
         `${API_BASE_URL}/${datasourceId}/logical-relations`,
         logicalRelation,
       );
-      return response.data.data || null;
+      return response.data || null;
     } catch (error) {
       console.error('Failed to add logical relation:', error);
       throw error;
@@ -77,11 +77,10 @@ class LogicalRelationService {
       'id' | 'datasourceId' | 'isDeleted' | 'createdTime' | 'updatedTime'
     >,
   ): Promise<ApiResponse<LogicalRelation>> {
-    const response = await axios.put<ApiResponse<LogicalRelation>>(
+    return request.put<ApiResponse<LogicalRelation>>(
       `${API_BASE_URL}/${datasourceId}/logical-relations/${relationId}`,
       logicalRelation,
     );
-    return response.data;
   }
 
   // 删除逻辑外键
@@ -89,10 +88,9 @@ class LogicalRelationService {
     datasourceId: number,
     relationId: number,
   ): Promise<ApiResponse<void>> {
-    const response = await axios.delete<ApiResponse<void>>(
+    return request.delete<ApiResponse<void>>(
       `${API_BASE_URL}/${datasourceId}/logical-relations/${relationId}`,
     );
-    return response.data;
   }
 
   // 批量保存逻辑外键（替换现有的所有外键）
@@ -100,23 +98,22 @@ class LogicalRelationService {
     datasourceId: number,
     logicalRelations: LogicalRelation[],
   ): Promise<ApiResponse<LogicalRelation[]>> {
-    const response = await axios.put<ApiResponse<LogicalRelation[]>>(
+    return request.put<ApiResponse<LogicalRelation[]>>(
       `${API_BASE_URL}/${datasourceId}/logical-relations`,
       logicalRelations,
     );
-    return response.data;
   }
 
   // 获取数据源表的字段列表
   async getTableColumns(datasourceId: number, tableName: string): Promise<string[]> {
     try {
-      const response = await axios.get<ApiResponse<string[]>>(
+      const response = await request.get<ApiResponse<string[]>>(
         `${API_BASE_URL}/${datasourceId}/tables/${tableName}/columns`,
       );
-      if (response.data.success) {
-        return response.data.data || [];
+      if (response.success) {
+        return response.data || [];
       }
-      throw new Error(response.data.message);
+      throw new Error(response.message);
     } catch (error) {
       console.error('Failed to get table columns:', error);
       return [];

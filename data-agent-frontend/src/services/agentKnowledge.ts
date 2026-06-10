@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import axios from 'axios';
+import request from '@/utils/request';
 
 /**
  * 知识库实体
@@ -65,11 +65,7 @@ class AgentKnowledgeService {
    * 分页查询知识列表（支持多条件过滤）
    */
   async queryByPage(queryDTO: AgentKnowledgeQueryDTO): Promise<PageResult<AgentKnowledge>> {
-    const response = await axios.post<PageResult<AgentKnowledge>>(
-      `${API_BASE_URL}/query/page`,
-      queryDTO,
-    );
-    return response.data;
+    return request.post<PageResult<AgentKnowledge>>(`${API_BASE_URL}/query/page`, queryDTO);
   }
 
   /**
@@ -86,11 +82,11 @@ class AgentKnowledgeService {
     if (status) params.status = status;
     if (keyword) params.keyword = keyword;
 
-    const response = await axios.get<{ success: boolean; data: AgentKnowledge[] }>(
+    const response = await request.get<{ success: boolean; data: AgentKnowledge[] }>(
       `${API_BASE_URL}/agent/${agentId}`,
       { params },
     );
-    return response.data.data;
+    return response.data;
   }
 
   /**
@@ -98,15 +94,12 @@ class AgentKnowledgeService {
    */
   async getById(id: number): Promise<AgentKnowledge | null> {
     try {
-      const response = await axios.get<{ success: boolean; data: AgentKnowledge }>(
+      const response = await request.get<{ success: boolean; data: AgentKnowledge }>(
         `${API_BASE_URL}/${id}`,
       );
-      return response.data.data;
+      return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        return null;
-      }
-      throw error;
+      return null;
     }
   }
 
@@ -114,11 +107,11 @@ class AgentKnowledgeService {
    * 创建知识
    */
   async create(knowledge: AgentKnowledge): Promise<AgentKnowledge> {
-    const response = await axios.post<{ success: boolean; data: AgentKnowledge }>(
+    const response = await request.post<{ success: boolean; data: AgentKnowledge }>(
       `${API_BASE_URL}/create`,
       knowledge,
     );
-    return response.data.data;
+    return response.data;
   }
 
   /**
@@ -126,16 +119,13 @@ class AgentKnowledgeService {
    */
   async update(id: number, knowledge: Partial<AgentKnowledge>): Promise<AgentKnowledge | null> {
     try {
-      const response = await axios.put<{ success: boolean; data: AgentKnowledge }>(
+      const response = await request.put<{ success: boolean; data: AgentKnowledge }>(
         `${API_BASE_URL}/${id}`,
         knowledge,
       );
-      return response.data.data;
+      return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        return null;
-      }
-      throw error;
+      return null;
     }
   }
 
@@ -144,7 +134,7 @@ class AgentKnowledgeService {
    */
   async updateRecallStatus(id: number, recalled: boolean): Promise<AgentKnowledge | null> {
     try {
-      const response = await axios.put<{ success: boolean; data: AgentKnowledge }>(
+      const response = await request.put<{ success: boolean; data: AgentKnowledge }>(
         `${API_BASE_URL}/recall/${id}`,
         null,
         {
@@ -153,7 +143,7 @@ class AgentKnowledgeService {
           },
         },
       );
-      return response.data.data;
+      return response.data;
     } catch (error) {
       console.error('Failed to update recall status:', error);
       return null;
@@ -165,13 +155,10 @@ class AgentKnowledgeService {
    */
   async delete(id: number): Promise<boolean> {
     try {
-      await axios.delete(`${API_BASE_URL}/${id}`);
+      await request.delete(`${API_BASE_URL}/${id}`);
       return true;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        return false;
-      }
-      throw error;
+      return false;
     }
   }
 
@@ -180,10 +167,10 @@ class AgentKnowledgeService {
    */
   async retryEmbedding(id: number): Promise<boolean> {
     try {
-      const response = await axios.post<{ success: boolean }>(
+      const response = await request.post<{ success: boolean }>(
         `${API_BASE_URL}/retry-embedding/${id}`,
       );
-      return response.data.success;
+      return response.success;
     } catch (error) {
       console.error('Failed to retry embedding:', error);
       return false;
@@ -197,14 +184,14 @@ class AgentKnowledgeService {
     totalCount: number;
     typeStatistics: Array<[string, number]>;
   }> {
-    const response = await axios.get<{
+    const response = await request.get<{
       success: boolean;
       data: {
         totalCount: number;
         typeStatistics: Array<[string, number]>;
       };
     }>(`${API_BASE_URL}/statistics/${agentId}`);
-    return response.data.data;
+    return response.data;
   }
 }
 

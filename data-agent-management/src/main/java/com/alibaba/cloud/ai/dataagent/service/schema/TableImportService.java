@@ -215,13 +215,13 @@ public class TableImportService {
 			return 0;
 		}
 
-		// 构建INSERT语句
+		// 构建INSERT语句 - 不使用引号，直接使用标识符（兼容所有数据库）
 		List<String> fieldNames = columns.stream()
-			.map(col -> "`" + col.getFieldName() + "`")
+			.map(col -> col.getFieldName())
 			.toList();
 		
 		String placeholders = String.join(", ", columns.stream().map(c -> "?").toList());
-		String insertSql = "INSERT INTO `" + tableName + "` (" + 
+		String insertSql = "INSERT INTO " + tableName + " (" + 
 			String.join(", ", fieldNames) + ") VALUES (" + placeholders + ")";
 
 		log.debug("INSERT SQL: {}", insertSql);

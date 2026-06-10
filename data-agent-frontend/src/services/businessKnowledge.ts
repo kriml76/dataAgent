@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import axios from 'axios';
+import request from '@/utils/request';
 import { ApiResponse } from './common';
 
 interface BusinessKnowledgeVO {
@@ -60,10 +60,10 @@ class BusinessKnowledgeService {
       if (keyword) {
         params.keyword = keyword;
       }
-      const response = await axios.get<ApiResponse<BusinessKnowledgeVO[]>>(API_BASE_URL, {
+      const response = await request.get<ApiResponse<BusinessKnowledgeVO[]>>(API_BASE_URL, {
         params,
       });
-      return response.data.data || [];
+      return response.data || [];
     } catch (error) {
       console.error('Failed to fetch business knowledge list:', error);
       throw error;
@@ -76,13 +76,10 @@ class BusinessKnowledgeService {
    */
   async get(id: number): Promise<BusinessKnowledgeVO | null> {
     try {
-      const response = await axios.get<ApiResponse<BusinessKnowledgeVO>>(`${API_BASE_URL}/${id}`);
-      return response.data.data || null;
+      const response = await request.get<ApiResponse<BusinessKnowledgeVO>>(`${API_BASE_URL}/${id}`);
+      return response.data || null;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        return null;
-      }
-      throw error;
+      return null;
     }
   }
 
@@ -91,8 +88,8 @@ class BusinessKnowledgeService {
    * @param knowledge 业务知识 DTO 对象
    */
   async create(knowledge: CreateBusinessKnowledgeDTO): Promise<BusinessKnowledgeVO> {
-    const response = await axios.post<ApiResponse<BusinessKnowledgeVO>>(API_BASE_URL, knowledge);
-    return response.data.data!;
+    const response = await request.post<ApiResponse<BusinessKnowledgeVO>>(API_BASE_URL, knowledge);
+    return response.data!;
   }
 
   /**
@@ -105,16 +102,13 @@ class BusinessKnowledgeService {
     knowledge: UpdateBusinessKnowledgeDTO,
   ): Promise<BusinessKnowledgeVO | null> {
     try {
-      const response = await axios.put<ApiResponse<BusinessKnowledgeVO>>(
+      const response = await request.put<ApiResponse<BusinessKnowledgeVO>>(
         `${API_BASE_URL}/${id}`,
         knowledge,
       );
-      return response.data.data || null;
+      return response.data || null;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        return null;
-      }
-      throw error;
+      return null;
     }
   }
 
@@ -124,13 +118,10 @@ class BusinessKnowledgeService {
    */
   async delete(id: number): Promise<boolean> {
     try {
-      const response = await axios.delete<ApiResponse<boolean>>(`${API_BASE_URL}/${id}`);
-      return response.data.success;
+      const response = await request.delete<ApiResponse<boolean>>(`${API_BASE_URL}/${id}`);
+      return response.success;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        return false;
-      }
-      throw error;
+      return false;
     }
   }
 
@@ -140,10 +131,10 @@ class BusinessKnowledgeService {
    * @param isRecall 是否召回 (true or false)
    */
   async recallKnowledge(id: number, isRecall: boolean): Promise<boolean> {
-    const response = await axios.post<ApiResponse<boolean>>(`${API_BASE_URL}/recall/${id}`, null, {
+    const response = await request.post<ApiResponse<boolean>>(`${API_BASE_URL}/recall/${id}`, null, {
       params: { isRecall },
     });
-    return response.data.success;
+    return response.success;
   }
 
   /**
@@ -151,10 +142,10 @@ class BusinessKnowledgeService {
    * @param id 业务知识 ID
    */
   async retryEmbedding(id: number): Promise<boolean> {
-    const response = await axios.post<ApiResponse<boolean>>(
+    const response = await request.post<ApiResponse<boolean>>(
       `${API_BASE_URL}/retry-embedding/${id}`,
     );
-    return response.data.success;
+    return response.success;
   }
 
   /**
@@ -162,14 +153,14 @@ class BusinessKnowledgeService {
    * @param agentId Agent ID
    */
   async refreshAllKnowledgeToVectorStore(agentId: string): Promise<boolean> {
-    const response = await axios.post<ApiResponse<boolean>>(
+    const response = await request.post<ApiResponse<boolean>>(
       `${API_BASE_URL}/refresh-vector-store`,
       null,
       {
         params: { agentId },
       },
     );
-    return response.data.success;
+    return response.success;
   }
 }
 

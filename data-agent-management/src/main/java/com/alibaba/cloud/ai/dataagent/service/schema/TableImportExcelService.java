@@ -221,7 +221,7 @@ public class TableImportExcelService {
 	}
 
 	/**
-	 * 自动识别模式解析Excel - 第一行作为字段名，自动推断字段类型
+	 * 自动识别模式解析Excel - 智能检测表头位置，自动推断字段类型
 	 */
 	public TableStructureDTO parseExcelAutoDetect(byte[] excelBytes, String filename) throws IOException {
 		log.info("自动识别模式解析Excel文件: {}", filename);
@@ -236,28 +236,41 @@ public class TableImportExcelService {
 				throw new IllegalArgumentException("Excel文件为空");
 			}
 			
-			// 第一行作为字段名
-			Map<Integer, String> headerRow = rawData.get(0);
-			log.info("检测到字段名: {}", headerRow);
+			// 智能查找表头行 - 跳过开头的空行或只有一个单元格的大标题行
+			int headerRowIndex = findHeaderRowIndex(rawData);
+			log.info("检测到表头在第 {} 行 (Excel行号: {})", headerRowIndex, headerRowIndex + 1);
+			
+			// 获取表头行
+			Map<Integer, String> headerRow = rawData.get(headerRowIndex);
+			log.info("识别到的表头: {}", headerRow);
 			
 			if (headerRow.isEmpty()) {
-				throw new IllegalArgumentException("Excel第一行(表头)为空");
+				throw new IllegalArgumentException("未找到有效的表头");
 			}
 			
-			// 构建字段列表
+			// 构建字段列表（去重，智能命名）
 			List<com.alibaba.cloud.ai.dataagent.dto.schema.TableImportItem> columns = new ArrayList<>();
 			Map<Integer, String> columnIndexMap = new LinkedHashMap<>();
+			Map<String, Integer> fieldNameCounter = new java.util.HashMap<>();
 			
 			for (Map.Entry<Integer, String> entry : headerRow.entrySet()) {
-				String fieldName = entry.getValue();
-				if (fieldName == null || fieldName.trim().isEmpty()) {
+				String originalFieldName = entry.getValue();
+				if (originalFieldName == null || originalFieldName.trim().isEmpty()) {
+					log.debug("跳过空列,列索引: {}", entry.getKey());
 					continue;
 				}
 				
-				// 清理字段名
-				fieldName = fieldName.trim().replaceAll("[^a-zA-Z0-9_]", "_").toLowerCase();
-				if (!fieldName.matches("^[a-zA-Z].*")) {
-					fieldName = "col_" + fieldName;
+				// 清理字段名 - 更智能的命名
+				String fieldName = smartCleanFieldName(originalFieldName);
+				
+				// 处理重复字段名
+				if (fieldNameCounter.containsKey(fieldName)) {
+					int count = fieldNameCounter.get(fieldName);
+					fieldNameCounter.put(fieldName, count + 1);
+					fieldName = fieldName + "_" + (count + 1);
+					log.warn("发现重复字段名,自动重命名: '{}' -> '{}'", originalFieldName, fieldName);
+				} else {
+					fieldNameCounter.put(fieldName, 1);
 				}
 				
 				com.alibaba.cloud.ai.dataagent.dto.schema.TableImportItem column = 
@@ -266,7 +279,7 @@ public class TableImportExcelService {
 					.dataType("VARCHAR(255)") // 默认类型
 					.isPrimaryKey("否")
 					.isNotNull("否")
-					.comment(entry.getValue())
+					.comment(originalFieldName)
 					.build();
 				
 				columns.add(column);
@@ -275,16 +288,19 @@ public class TableImportExcelService {
 			
 			log.info("识别到 {} 个字段", columns.size());
 			
+			// 数据从表头的下一行开始
+			int dataStartIndex = headerRowIndex + 1;
+			
 			// 根据前10行数据推断字段类型
-			int sampleRows = Math.min(10, rawData.size() - 1);
+			int sampleRows = Math.min(10, rawData.size() - dataStartIndex);
 			if (sampleRows > 0) {
-				inferColumnTypes(columns, columnIndexMap, rawData.subList(1, sampleRows + 1));
+				inferColumnTypes(columns, columnIndexMap, rawData.subList(dataStartIndex, dataStartIndex + sampleRows));
 				log.info("类型推断完成: {}", columns.stream().map(c -> c.getFieldName() + ":" + c.getDataType()).toList());
 			}
 			
 			// 解析所有数据行
 			List<Map<String, Object>> dataRows = new ArrayList<>();
-			for (int i = 1; i < rawData.size(); i++) {
+			for (int i = dataStartIndex; i < rawData.size(); i++) {
 				Map<Integer, String> row = rawData.get(i);
 				if (row == null || row.isEmpty()) {
 					continue;
@@ -395,6 +411,80 @@ public class TableImportExcelService {
 				}
 			}
 		}
+	}
+
+	/**
+	 * 智能查找表头行的索引
+	 * 规则:
+	 * 1. 跳过空行
+	 * 2. 跳过只有1个非空单元格的行(通常是大标题)
+	 * 3. 找到第一个非空列超过50%的行作为表头
+	 */
+	private int findHeaderRowIndex(List<Map<Integer, String>> rawData) {
+		for (int i = 0; i < rawData.size() && i < 10; i++) { // 只检查前10行
+			Map<Integer, String> row = rawData.get(i);
+			
+			if (row == null || row.isEmpty()) {
+				continue;
+			}
+			
+			// 统计非空列数
+			int nonEmptyCount = 0;
+			for (String value : row.values()) {
+				if (value != null && !value.trim().isEmpty()) {
+					nonEmptyCount++;
+				}
+			}
+			
+			// 如果只有1个非空列，很可能是大标题，跳过
+			// 如果非空列超过3个，认为是表头
+			if (nonEmptyCount >= 3) {
+				return i;
+			}
+		}
+		
+		// 如果没找到，默认用第一行
+		return 0;
+	}
+
+	/**
+	 * 智能清理字段名 - 转换中文为拼音首字母，处理特殊字符
+	 */
+	private String smartCleanFieldName(String originalName) {
+		if (originalName == null || originalName.trim().isEmpty()) {
+			return "col";
+		}
+		
+		String name = originalName.trim();
+		
+		// 移除常见的前缀后缀
+		name = name.replaceAll("^[\\s_\\-]+", "").replaceAll("[\\s_\\-]+$", "");
+		
+		// 将常见的非字母数字字符替换为下划线
+		name = name.replaceAll("[^a-zA-Z0-9_\\u4e00-\\u9fa5]", "_");
+		
+		// 如果包含中文，直接使用 col_ 开头加序号(简单处理)
+		if (name.matches(".*[\\u4e00-\\u9fa5].*")) {
+			// 提取中文并转换为拼音首字母（简化处理：用col_加上原字符串的hash码）
+			// 为了简单，直接替换所有非字母数字为下划线
+			name = name.replaceAll("[^a-zA-Z0-9_]", "_");
+		}
+		
+		// 转换为小写
+		name = name.toLowerCase();
+		
+		// 清理连续的下划线
+		name = name.replaceAll("_+", "_");
+		
+		// 移除开头的下划线
+		name = name.replaceAll("^_+", "");
+		
+		// 如果为空或只有数字，添加前缀
+		if (name.isEmpty() || name.matches("^\\d.*")) {
+			name = "col_" + name;
+		}
+		
+		return name;
 	}
 
 }

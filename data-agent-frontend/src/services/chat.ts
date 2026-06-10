@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import axios from 'axios';
+import request from '@/utils/request';
 import type { ApiResponse } from './common';
 
 export interface ChatSession {
@@ -47,8 +47,7 @@ class ChatService {
    * @param agentId Agent ID
    */
   async getAgentSessions(agentId: number): Promise<ChatSession[]> {
-    const response = await axios.get<ChatSession[]>(`${API_BASE_URL}/agent/${agentId}/sessions`);
-    return response.data;
+    return request.get<ChatSession[]>(`${API_BASE_URL}/agent/${agentId}/sessions`);
   }
 
   /**
@@ -58,16 +57,12 @@ class ChatService {
    * @param userId 用户ID
    */
   async createSession(agentId: number, title?: string, userId?: number): Promise<ChatSession> {
-    const request = {
+    const requestData = {
       title,
       userId,
     };
 
-    const response = await axios.post<ChatSession>(
-      `${API_BASE_URL}/agent/${agentId}/sessions`,
-      request,
-    );
-    return response.data;
+    return request.post<ChatSession>(`${API_BASE_URL}/agent/${agentId}/sessions`, requestData);
   }
 
   /**
@@ -75,8 +70,7 @@ class ChatService {
    * @param agentId Agent ID
    */
   async clearAgentSessions(agentId: number): Promise<ApiResponse> {
-    const response = await axios.delete<ApiResponse>(`${API_BASE_URL}/agent/${agentId}/sessions`);
-    return response.data;
+    return request.delete<ApiResponse>(`${API_BASE_URL}/agent/${agentId}/sessions`);
   }
 
   /**
@@ -84,10 +78,7 @@ class ChatService {
    * @param sessionId 会话ID
    */
   async getSessionMessages(sessionId: string): Promise<ChatMessage[]> {
-    const response = await axios.get<ChatMessage[]>(
-      `${API_BASE_URL}/sessions/${sessionId}/messages`,
-    );
-    return response.data;
+    return request.get<ChatMessage[]>(`${API_BASE_URL}/sessions/${sessionId}/messages`);
   }
 
   /**
@@ -103,16 +94,12 @@ class ChatService {
         sessionId,
       };
 
-      const response = await axios.post<ChatMessage>(
+      return await request.post<ChatMessage>(
         `${API_BASE_URL}/sessions/${sessionId}/messages`,
         messageData,
       );
-      return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 500) {
-        throw new Error('保存消息失败');
-      }
-      throw error;
+      throw new Error('保存消息失败');
     }
   }
 
@@ -123,22 +110,15 @@ class ChatService {
    */
   async pinSession(sessionId: string, isPinned: boolean): Promise<ApiResponse> {
     try {
-      const response = await axios.put<ApiResponse>(
+      return await request.put<ApiResponse>(
         `${API_BASE_URL}/sessions/${sessionId}/pin`,
         null,
         {
           params: { isPinned },
         },
       );
-      return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 400) {
-        throw new Error('isPinned参数不能为空');
-      }
-      if (axios.isAxiosError(error) && error.response?.status === 500) {
-        throw new Error('操作失败');
-      }
-      throw error;
+      throw new Error('操作失败');
     }
   }
 
@@ -153,22 +133,15 @@ class ChatService {
         throw new Error('标题不能为空');
       }
 
-      const response = await axios.put<ApiResponse>(
+      return await request.put<ApiResponse>(
         `${API_BASE_URL}/sessions/${sessionId}/rename`,
         null,
         {
           params: { title: title.trim() },
         },
       );
-      return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 400) {
-        throw new Error('标题不能为空');
-      }
-      if (axios.isAxiosError(error) && error.response?.status === 500) {
-        throw new Error('重命名失败');
-      }
-      throw error;
+      throw new Error('重命名失败');
     }
   }
 
@@ -178,13 +151,9 @@ class ChatService {
    */
   async deleteSession(sessionId: string): Promise<ApiResponse> {
     try {
-      const response = await axios.delete<ApiResponse>(`${API_BASE_URL}/sessions/${sessionId}`);
-      return response.data;
+      return await request.delete<ApiResponse>(`${API_BASE_URL}/sessions/${sessionId}`);
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 500) {
-        throw new Error('删除失败');
-      }
-      throw error;
+      throw new Error('删除失败');
     }
   }
 
@@ -195,7 +164,7 @@ class ChatService {
    */
   async downloadHtmlReport(sessionId: string, content: string): Promise<void> {
     try {
-      const response = await axios.post(
+      const response = await request.service.post(
         `${API_BASE_URL}/sessions/${sessionId}/reports/html`,
         content,
         {
@@ -227,10 +196,7 @@ class ChatService {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(`下载失败: ${error.message}`);
-      }
-      throw error;
+      throw new Error(`下载失败`);
     }
   }
 }
