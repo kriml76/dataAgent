@@ -34,6 +34,8 @@ import {
   Checkbox,
   Divider,
   Radio,
+  Tabs,
+  Tooltip,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -74,6 +76,8 @@ const DataSourcesPage: React.FC = () => {
   const [formDialogMode, setFormDialogMode] = useState<'create' | 'edit'>('create');
   const [formDialogTarget, setFormDialogTarget] = useState<Datasource | null>(null);
   const [form] = Form.useForm();
+  const [formActiveTab, setFormActiveTab] = useState<'select' | 'add'>('select');
+  const [selectedDatasourceId, setSelectedDatasourceId] = useState<number | null>(null);
   
   // Expanded row states
   const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([]);
@@ -82,6 +86,7 @@ const DataSourcesPage: React.FC = () => {
   const [loadingTablesId, setLoadingTablesId] = useState<number | null>(null);
   const [tableFetchError, setTableFetchError] = useState<Record<number, boolean>>({});
   const [updatingTablesId, setUpdatingTablesId] = useState<number | null>(null);
+  const [agentDatasourceList, setAgentDatasourceList] = useState<any[]>([]);
   
   // Foreign key dialog states
   const [fkDialogVisible, setFkDialogVisible] = useState(false);
@@ -134,8 +139,24 @@ const DataSourcesPage: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const data = await datasourceService.getAllDatasource();
-      setDataSource(data);
+      // 加载所有数据源（用于选择已有数据源）
+      const allData = await datasourceService.getAllDatasource();
+      setDataSource(allData);
+      
+      // 如果有智能体ID，加载智能体的数据源列表
+      if (agentId) {
+        const agentDatasource = await agentDatasourceService.getAgentDatasource(Number(agentId));
+        setAgentDatasourceList(agentDatasource || []);
+        
+        // 初始化已选择的表
+        const newSelectedTables: Record<number, string[]> = {};
+        agentDatasource.forEach((item: any) => {
+          if (item.selectTables && item.datasource?.id) {
+            newSelectedTables[item.datasource.id] = [...item.selectTables];
+          }
+        });
+        setSelectedTables(newSelectedTables);
+      }
     } catch (error) {
       console.error('Failed to load datasources:', error);
       message.error('获取数据源列表失败');
@@ -163,11 +184,36 @@ const DataSourcesPage: React.FC = () => {
     setFormDialogTarget(mode === 'edit' && item ? { ...item } : null);
     if (mode === 'edit' && item) {
       form.setFieldsValue(item);
+      setFormDialogVisible(true);
     } else {
       form.resetFields();
       form.setFieldsValue({ type: 'mysql', port: 3306 });
+      setFormActiveTab('select');
+      setSelectedDatasourceId(null);
+      setFormDialogVisible(true);
     }
-    setFormDialogVisible(true);
+  };
+
+  const handleAddSelectedDatasource = async () => {
+    if (!selectedDatasourceId) {
+      message.warning('请选择一个数据源');
+      return;
+    }
+    if (!agentId) {
+      message.error('缺少智能体ID');
+      return;
+    }
+    setSaving(true);
+    try {
+      await agentDatasourceService.addDatasourceToAgent(agentId, selectedDatasourceId);
+      message.success('添加成功');
+      setFormDialogVisible(false);
+      loadData();
+    } catch (error) {
+      message.error('添加失败');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleFormSubmit = async () => {
@@ -221,15 +267,23 @@ const DataSourcesPage: React.FC = () => {
   // Toggle status function
   const handleToggleStatus = async (item: Datasource) => {
     if (!item.id) return;
+    if (!agentId) {
+      message.error('缺少智能体ID');
+      return;
+    }
     setTogglingStatusId(item.id);
-    const newStatus = item.status === 'active' ? 'inactive' : 'active';
+    const isActive = item.status !== 'active';
     try {
-      await datasourceService.updateDatasource(item.id, {
-        ...item,
-        status: newStatus,
+      const res = await agentDatasourceService.toggleDatasourceForAgent(Number(agentId), {
+        datasourceId: item.id,
+        isActive: isActive ? 1 : 0,
       });
-      message.success(newStatus === 'active' ? '已启用' : '已禁用');
-      loadData();
+      if (res.success) {
+        message.success(isActive ? '已启用' : '已禁用');
+        loadData();
+      } else {
+        message.error(res.message || '操作失败');
+      }
     } catch {
       message.error('操作失败');
     } finally {
@@ -240,16 +294,20 @@ const DataSourcesPage: React.FC = () => {
   // Delete function
   const handleDelete = async (item: Datasource) => {
     if (!item.id) return;
+    if (!agentId) {
+      message.error('缺少智能体ID');
+      return;
+    }
     try {
-      const res = await datasourceService.deleteDatasource(item.id);
+      const res = await agentDatasourceService.removeDatasourceFromAgent(agentId, item.id);
       if (res.success) {
-        message.success('删除成功');
+        message.success('移除成功');
         loadData();
       } else {
-        message.error(res.message || '删除失败');
+        message.error(res.message || '移除失败');
       }
     } catch {
-      message.error('删除失败');
+      message.error('移除失败');
     }
   };
 
@@ -449,11 +507,21 @@ const DataSourcesPage: React.FC = () => {
     try {
       const tables = await datasourceService.getDatasourceTables(datasourceId);
       setTableLists(prev => ({ ...prev, [datasourceId]: tables || [] }));
-      setSelectedTables(prev => ({ ...prev, [datasourceId]: prev[datasourceId] || [] }));
+      // 如果没有初始化已选择的表，则使用当前已选择的表
+      if (!selectedTables[datasourceId]) {
+        const agentDatasource = agentDatasourceList.find(
+          item => item.datasource?.id === datasourceId,
+        );
+        setSelectedTables(prev => ({
+          ...prev,
+          [datasourceId]: agentDatasource?.selectTables || [],
+        }));
+      }
+      message.success(`成功加载 ${tables.length} 个表`);
     } catch {
       setTableLists(prev => ({ ...prev, [datasourceId]: [] }));
-      setSelectedTables(prev => ({ ...prev, [datasourceId]: [] }));
       setTableFetchError(prev => ({ ...prev, [datasourceId]: true }));
+      message.error('加载表列表失败');
     } finally {
       setLoadingTablesId(null);
     }
@@ -465,10 +533,24 @@ const DataSourcesPage: React.FC = () => {
 
   const updateTables = async (item: Datasource) => {
     if (!item.id) return;
+    if (!agentId) {
+      message.error('缺少智能体ID');
+      return;
+    }
     setUpdatingTablesId(item.id);
     try {
-      const selectedCount = selectedTables[item.id]?.length || 0;
-      message.info(`已选择 ${selectedCount} 个表（表选择在智能体关联数据源时可配置）`);
+      const response = await agentDatasourceService.updateDatasourceTables(agentId, {
+        datasourceId: item.id,
+        tables: selectedTables[item.id] || [],
+      });
+      if (response.success) {
+        message.success('数据表更新成功');
+      } else {
+        message.error('数据表更新失败');
+      }
+    } catch (error) {
+      message.error('数据表更新失败');
+      console.error('Failed to update datasource tables:', error);
     } finally {
       setUpdatingTablesId(null);
     }
@@ -562,6 +644,20 @@ const DataSourcesPage: React.FC = () => {
       ),
     },
     {
+      title: '连接地址',
+      dataIndex: 'connectionUrl',
+      key: 'connectionUrl',
+      width: 200,
+      ellipsis: true,
+      render: (connectionUrl: string) => (
+        <Tooltip title={connectionUrl}>
+          <span style={{ cursor: 'pointer' }}>
+            {connectionUrl ? connectionUrl.substring(0, 50) + (connectionUrl.length > 50 ? '...' : '') : '-'}
+          </span>
+        </Tooltip>
+      ),
+    },
+    {
       title: '连接状态',
       dataIndex: 'testStatus',
       key: 'testStatus',
@@ -571,29 +667,31 @@ const DataSourcesPage: React.FC = () => {
         <Tag
           color={
             testStatus === 'success'
-              ? 'blue'
-              : testStatus === 'fail'
-              ? 'error'
-              : 'default'
+              ? 'success'
+              : 'error'
           }
         >
-          <Space size={4}>
-            {testStatus === 'success' && (
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  backgroundColor: '#52c41a',
-                  animation: 'pulse 2s infinite',
-                }}
-              />
-            )}
-            {getStatusText(testStatus)}
-          </Space>
+          {testStatus === 'success' ? '连接成功' : '连接失败'}
         </Tag>
       ),
+    },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      width: 100,
+      align: 'center',
+      render: (status: string) => (
+        <Tag color={status === 'active' ? 'success' : 'default'}>
+          {status === 'active' ? '启用' : '禁用'}
+        </Tag>
+      ),
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'createTime',
+      key: 'createTime',
+      width: 150,
     },
     {
       title: '操作',
@@ -603,15 +701,16 @@ const DataSourcesPage: React.FC = () => {
       render: (_, record: Datasource) => (
         <Space size="small">
           <Button
-            type="link"
+            type="default"
             size="small"
             loading={togglingStatusId === record.id}
             onClick={() => handleToggleStatus(record)}
+            danger={record.status === 'active'}
           >
             {record.status === 'active' ? '禁用' : '启用'}
           </Button>
           <Button
-            type="link"
+            type="default"
             size="small"
             loading={testingId === record.id}
             onClick={() => handleTestConnection(record)}
@@ -619,35 +718,24 @@ const DataSourcesPage: React.FC = () => {
             测试连接
           </Button>
           <Button
-            type="link"
-            size="small"
-            icon={<UploadOutlined />}
-            onClick={() => record.id && openImportDialog(record.id)}
-          >
-            导入表
-          </Button>
-          <Button
-            type="link"
+            type="default"
             size="small"
             onClick={() => openFkDialog(record)}
           >
-            逻辑外键
+            <LinkOutlined style={{ marginRight: 4 }} />
+            逻辑外键配置
           </Button>
-          <Button
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => openFormDialog('edit', record)}
-          />
           <Popconfirm
-            title="删除确认"
-            description={`确定要删除数据源「${record.name}」吗？此操作不可恢复。`}
+            title="移除确认"
+            description={`确定要移除数据源「${record.name}」吗？`}
             onConfirm={() => handleDelete(record)}
-            okText="删除"
+            okText="移除"
             cancelText="取消"
             okButtonProps={{ danger: true }}
           >
-            <Button type="link" size="small" danger icon={<DeleteOutlined />} />
+            <Button type="default" size="small" danger>
+              移除
+            </Button>
           </Popconfirm>
         </Space>
       ),
@@ -841,110 +929,284 @@ const DataSourcesPage: React.FC = () => {
         title={formDialogMode === 'create' ? '添加数据源' : '编辑数据源'}
         open={formDialogVisible}
         onCancel={() => setFormDialogVisible(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setFormDialogVisible(false)}>
-            取消
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            loading={saving}
-            onClick={handleFormSubmit}
-          >
-            {formDialogMode === 'create' ? '创建' : '保存'}
-          </Button>,
-        ]}
-        width={800}
+        footer={null}
+        width={1000}
+        destroyOnClose
       >
-        <Form
-          form={form}
-          layout="vertical"
-          style={{ marginTop: 16 }}
-        >
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <Form.Item
-              label="数据源名称"
-              name="name"
-              rules={[{ required: true, message: '请输入数据源名称' }]}
+        {formDialogMode === 'edit' ? (
+          <>
+            <Form
+              form={form}
+              layout="vertical"
+              style={{ marginTop: 16 }}
             >
-              <Input placeholder="请输入名称" />
-            </Form.Item>
-            
-            <Form.Item
-              label="数据库类型"
-              name="type"
-              rules={[{ required: true, message: '请选择数据库类型' }]}
-            >
-              <Select options={[
-                { label: 'MySQL', value: 'mysql' },
-                { label: 'PostgreSQL', value: 'postgresql' },
-                { label: 'SQL Server', value: 'sqlserver' },
-                { label: '达梦', value: 'dameng' },
-                { label: 'Oracle', value: 'oracle' },
-              ]} />
-            </Form.Item>
-          </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <Form.Item
+                  label="数据源名称"
+                  name="name"
+                  rules={[{ required: true, message: '请输入数据源名称' }]}
+                >
+                  <Input placeholder="请输入名称" size="large" />
+                </Form.Item>
+                
+                <Form.Item
+                  label="数据库类型"
+                  name="type"
+                  rules={[{ required: true, message: '请选择数据库类型' }]}
+                >
+                  <Select size="large" options={[
+                    { label: 'MySQL', value: 'mysql' },
+                    { label: 'PostgreSQL', value: 'postgresql' },
+                    { label: 'SQL Server', value: 'sqlserver' },
+                    { label: '达梦', value: 'dameng' },
+                    { label: 'Oracle', value: 'oracle' },
+                  ]} />
+                </Form.Item>
+              </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
-            <Form.Item
-              label="主机地址"
-              name="host"
-              rules={[{ required: true, message: '请输入主机地址' }]}
-            >
-              <Input placeholder="localhost 或 IP 地址" />
-            </Form.Item>
-            
-            <Form.Item
-              label="端口号"
-              name="port"
-              rules={[{ required: true, message: '请输入端口号' }]}
-            >
-              <InputNumber style={{ width: '100%' }} min={1} max={65535} />
-            </Form.Item>
-          </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+                <Form.Item
+                  label="主机地址"
+                  name="host"
+                  rules={[{ required: true, message: '请输入主机地址' }]}
+                >
+                  <Input placeholder="localhost 或 IP 地址" size="large" />
+                </Form.Item>
+                
+                <Form.Item
+                  label="端口号"
+                  name="port"
+                  rules={[{ required: true, message: '请输入端口号' }]}
+                >
+                  <InputNumber style={{ width: '100%' }} min={1} max={65535} size="large" />
+                </Form.Item>
+              </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: form.getFieldValue('type') === 'postgresql' || form.getFieldValue('type') === 'oracle' ? '1fr 1fr' : '1fr', gap: 16 }}>
-            <Form.Item
-              label="数据库名"
-              name="databaseName"
-              rules={[{ required: true, message: '请输入数据库名' }]}
-            >
-              <Input placeholder="Database Name" />
-            </Form.Item>
-            
-            {(form.getFieldValue('type') === 'postgresql' || form.getFieldValue('type') === 'oracle') && (
-              <Form.Item label="Schema 名" name="schemaName">
-                <Input placeholder="如 public" />
+              <div style={{ display: 'grid', gridTemplateColumns: form.getFieldValue('type') === 'postgresql' || form.getFieldValue('type') === 'oracle' ? '1fr 1fr' : '1fr', gap: 16 }}>
+                <Form.Item
+                  label="数据库名"
+                  name="databaseName"
+                  rules={[{ required: true, message: '请输入数据库名' }]}
+                >
+                  <Input placeholder="Database Name" size="large" />
+                </Form.Item>
+                
+                {(form.getFieldValue('type') === 'postgresql' || form.getFieldValue('type') === 'oracle') && (
+                  <Form.Item label="Schema 名" name="schemaName">
+                    <Input placeholder="如 public" size="large" />
+                  </Form.Item>
+                )}
+              </div>
+
+              <Form.Item label="JDBC 连接地址 (可选)" name="connectionUrl">
+                <Input placeholder="若不填则自动生成" size="large" />
               </Form.Item>
-            )}
-          </div>
 
-          <Form.Item label="JDBC 连接地址 (可选)" name="connectionUrl">
-            <Input placeholder="若不填则自动生成" />
-          </Form.Item>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <Form.Item
+                  label="用户名"
+                  name="username"
+                  rules={[{ required: true, message: '请输入用户名' }]}
+                >
+                  <Input placeholder="Username" size="large" />
+                </Form.Item>
+                
+                <Form.Item
+                  label="密码"
+                  name="password"
+                  rules={[{ required: true, message: '请输入密码' }]}
+                >
+                  <Input.Password placeholder="Password" size="large" />
+                </Form.Item>
+              </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <Form.Item
-              label="用户名"
-              name="username"
-              rules={[{ required: true, message: '请输入用户名' }]}
-            >
-              <Input placeholder="Username" />
-            </Form.Item>
-            
-            <Form.Item
-              label="密码"
-              name="password"
-              rules={[{ required: true, message: '请输入密码' }]}
-            >
-              <Input.Password placeholder="Password" />
-            </Form.Item>
-          </div>
+              <Form.Item label="描述信息" name="description">
+                <Input.TextArea rows={4} placeholder="可选描述" size="large" />
+              </Form.Item>
+            </Form>
+            <div style={{ textAlign: 'right', marginTop: 24 }}>
+              <Button onClick={() => setFormDialogVisible(false)} style={{ marginRight: 8 }}>
+                取消
+              </Button>
+              <Button type="primary" loading={saving} onClick={handleFormSubmit}>
+                保存修改
+              </Button>
+            </div>
+          </>
+        ) : (
+          <Tabs
+            activeKey={formActiveTab}
+            onChange={(key) => setFormActiveTab(key as 'select' | 'add')}
+            type="card"
+            items={[
+              {
+                key: 'select',
+                label: '选择已有数据源',
+                children: (
+                  <>
+                    <Table
+                      dataSource={dataSource}
+                      rowKey="id"
+                      rowSelection={{
+                        type: 'radio',
+                        selectedRowKeys: selectedDatasourceId ? [selectedDatasourceId] : [],
+                        onChange: (keys) => {
+                          setSelectedDatasourceId(keys.length > 0 ? (keys[0] as number) : null);
+                        },
+                      }}
+                      pagination={false}
+                      size="small"
+                    >
+                      <Table.Column title="数据源名称" dataIndex="name" width={150} />
+                      <Table.Column title="数据源类型" dataIndex="type" width={100} />
+                      <Table.Column title="Host" dataIndex="host" width={100} />
+                      <Table.Column title="Port" dataIndex="port" width={80} />
+                      <Table.Column title="描述" dataIndex="description" width={300} />
+                      <Table.Column
+                        title="操作"
+                        width={150}
+                        render={(_, record: Datasource) => (
+                          <Space>
+                            <Button
+                              size="small"
+                              type="primary"
+                              onClick={() => openFormDialog('edit', record)}
+                            >
+                              修改
+                            </Button>
+                            <Popconfirm
+                              title="确认删除"
+                              description="删除后无法恢复，确定要删除该数据源吗？"
+                              onConfirm={() => handleDelete(record)}
+                            >
+                              <Button size="small" danger>
+                                删除
+                              </Button>
+                            </Popconfirm>
+                          </Space>
+                        )}
+                      />
+                    </Table>
+                    <Divider />
+                    <div style={{ textAlign: 'right' }}>
+                      <Button onClick={() => setFormDialogVisible(false)} style={{ marginRight: 8 }}>
+                        取消
+                      </Button>
+                      <Button type="primary" onClick={handleAddSelectedDatasource}>
+                        添加选中数据源
+                      </Button>
+                    </div>
+                  </>
+                ),
+              },
+              {
+                key: 'add',
+                label: '添加新数据源',
+                children: (
+                  <>
+                    <Form
+                      form={form}
+                      layout="vertical"
+                      style={{ marginTop: 16 }}
+                    >
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <Form.Item
+                          label="数据源名称 *"
+                          name="name"
+                          rules={[{ required: true, message: '请输入数据源名称' }]}
+                        >
+                          <Input placeholder="请输入数据源名称" size="large" />
+                        </Form.Item>
+                        
+                        <Form.Item
+                          label="数据源类型 *"
+                          name="type"
+                          rules={[{ required: true, message: '请选择数据源类型' }]}
+                        >
+                          <Select size="large" options={[
+                            { label: 'MySQL', value: 'mysql' },
+                            { label: 'PostgreSQL', value: 'postgresql' },
+                            { label: 'SQL Server', value: 'sqlserver' },
+                            { label: '达梦', value: 'dameng' },
+                            { label: 'Oracle', value: 'oracle' },
+                          ]} />
+                        </Form.Item>
+                      </div>
 
-          <Form.Item label="描述信息" name="description">
-            <Input.TextArea rows={2} placeholder="可选描述" />
-          </Form.Item>
-        </Form>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <Form.Item
+                          label="主机地址 *"
+                          name="host"
+                          rules={[{ required: true, message: '请输入主机地址' }]}
+                        >
+                          <Input placeholder="例如：localhost 或 192.168.1.100" size="large" />
+                        </Form.Item>
+                        
+                        <Form.Item
+                          label="端口号 *"
+                          name="port"
+                          rules={[{ required: true, message: '请输入端口号' }]}
+                        >
+                          <InputNumber style={{ width: '100%' }} min={0} max={65535} size="large" />
+                        </Form.Item>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: form.getFieldValue('type') === 'postgresql' || form.getFieldValue('type') === 'oracle' ? '1fr 1fr' : '1fr', gap: 16 }}>
+                        <Form.Item
+                          label="数据库名 *"
+                          name="databaseName"
+                          rules={[{ required: true, message: '请输入数据库名' }]}
+                        >
+                          <Input placeholder={form.getFieldValue('type') === 'postgresql' ? '例如：postgres' : '请输入数据库名称'} size="large" />
+                        </Form.Item>
+                        
+                        {(form.getFieldValue('type') === 'postgresql' || form.getFieldValue('type') === 'oracle') && (
+                          <Form.Item label="Schema 名 *" name="schemaName">
+                            <Input placeholder={form.getFieldValue('type') === 'postgresql' ? '例如：public' : '例如：SYSTEM'} size="large" />
+                          </Form.Item>
+                        )}
+                      </div>
+
+                      <Form.Item label="连接地址" name="connectionUrl">
+                        <Input placeholder="请输入JDBC地址（若不填则自动生成）" size="large" />
+                      </Form.Item>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <Form.Item
+                          label="用户名 *"
+                          name="username"
+                          rules={[{ required: true, message: '请输入用户名' }]}
+                        >
+                          <Input placeholder="请输入数据库用户名" size="large" />
+                        </Form.Item>
+                        
+                        <Form.Item
+                          label="密码 *"
+                          name="password"
+                          rules={[{ required: true, message: '请输入密码' }]}
+                        >
+                          <Input.Password placeholder="请输入数据库密码" size="large" />
+                        </Form.Item>
+                      </div>
+
+                      <Form.Item label="描述" name="description">
+                        <Input.TextArea rows={4} placeholder="请输入数据源描述（可选）" size="large" />
+                      </Form.Item>
+                    </Form>
+                    <div style={{ textAlign: 'right', marginTop: 24 }}>
+                      <Button onClick={() => setFormDialogVisible(false)} style={{ marginRight: 8 }}>
+                        取消
+                      </Button>
+                      <Button type="primary" loading={saving} onClick={handleFormSubmit}>
+                        创建并添加
+                      </Button>
+                    </div>
+                  </>
+                ),
+              },
+            ]}
+          />
+        )}
       </Modal>
 
       {/* Foreign Key Dialog */}
