@@ -82,5 +82,5 @@ logging:
 # JWT配置
 jwt:
   secret: ${JWT_SECRET:DataAgentSecretKey2026ForJWTTokenGenerationAndValidation}
-  expiration: ${JWT_EXPIRATION:7200}  # 2小时(秒)
+  expiration: ${JWT_EXPIRATION:864000}  # 10天(秒)
 
