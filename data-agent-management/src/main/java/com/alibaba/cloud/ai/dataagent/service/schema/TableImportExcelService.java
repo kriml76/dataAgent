@@ -50,8 +50,11 @@ public class TableImportExcelService {
 		log.info("开始解析Excel文件: {}", filename);
 
 		try {
+			// 将 InputStream 转换为 byte[] 以便重复读取
+			byte[] excelBytes = inputStream.readAllBytes();
+
 			// 读取第一个Sheet获取表结构定义
-			List<TableImportItem> columns = EasyExcel.read(inputStream)
+			List<TableImportItem> columns = EasyExcel.read(new java.io.ByteArrayInputStream(excelBytes))
 				.head(TableImportItem.class)
 				.sheet(0)
 				.doReadSync();
@@ -65,11 +68,16 @@ public class TableImportExcelService {
 				TableImportItem item = columns.get(i);
 				int rowNum = i + 2; // Excel行号从2开始(第1行是表头)
 
+				log.info("解析第{}行: fieldName='{}', dataType='{}'", 
+					rowNum, item.getFieldName(), item.getDataType());
+
 				if (item.getFieldName() == null || item.getFieldName().trim().isEmpty()) {
-					throw new IllegalArgumentException("第" + rowNum + "行: 字段名不能为空");
+					throw new IllegalArgumentException(String.format(
+						"第%d行: 字段名不能为空。请确保第一列表头为'字段名'或'字段名*'", rowNum));
 				}
 				if (item.getDataType() == null || item.getDataType().trim().isEmpty()) {
-					throw new IllegalArgumentException("第" + rowNum + "行: 数据类型不能为空");
+					throw new IllegalArgumentException(String.format(
+						"第%d行: 数据类型不能为空。请确保第二列表头为'数据类型'或'数据类型*',且每行数据都已填写", rowNum));
 				}
 
 				// 清理字段值
@@ -98,7 +106,7 @@ public class TableImportExcelService {
 			List<Map<String, Object>> dataRows = new ArrayList<>();
 			try {
 				// 尝试读取所有Sheet,找到非表结构定义的Sheet
-				List<Object> allSheets = EasyExcel.read(inputStream).doReadAllSync();
+				List<Object> allSheets = EasyExcel.read(new java.io.ByteArrayInputStream(excelBytes)).doReadAllSync();
 				
 				if (allSheets.size() > 1) {
 					// 第二个Sheet包含数据

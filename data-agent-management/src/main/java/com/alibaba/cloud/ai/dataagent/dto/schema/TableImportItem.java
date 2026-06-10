@@ -36,37 +36,37 @@ public class TableImportItem {
 	/**
 	 * 字段名(必填)
 	 */
-	@ExcelProperty(value = "字段名*", index = 0)
+	@ExcelProperty(value = {"字段名*", "字段名", "Field Name"}, index = 0)
 	private String fieldName;
 
 	/**
 	 * 数据类型(必填),如: VARCHAR(255), INT, DECIMAL(10,2), DATE等
 	 */
-	@ExcelProperty(value = "数据类型*", index = 1)
+	@ExcelProperty(value = {"数据类型*", "数据类型", "Data Type"}, index = 1)
 	private String dataType;
 
 	/**
 	 * 是否主键: 是/否
 	 */
-	@ExcelProperty(value = "是否主键", index = 2)
+	@ExcelProperty(value = {"是否主键", "主键", "Primary Key"}, index = 2)
 	private String isPrimaryKey;
 
 	/**
 	 * 是否非空: 是/否
 	 */
-	@ExcelProperty(value = "是否非空", index = 3)
+	@ExcelProperty(value = {"是否非空", "非空", "Not Null"}, index = 3)
 	private String isNotNull;
 
 	/**
 	 * 默认值
 	 */
-	@ExcelProperty(value = "默认值", index = 4)
+	@ExcelProperty(value = {"默认值", "Default Value"}, index = 4)
 	private String defaultValue;
 
 	/**
 	 * 字段注释
 	 */
-	@ExcelProperty(value = "字段注释", index = 5)
+	@ExcelProperty(value = {"字段注释", "注释", "Comment"}, index = 5)
 	private String comment;
 
 }
