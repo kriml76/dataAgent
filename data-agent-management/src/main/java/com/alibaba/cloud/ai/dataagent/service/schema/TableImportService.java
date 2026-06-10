@@ -16,7 +16,9 @@
 package com.alibaba.cloud.ai.dataagent.service.schema;
 
 import com.alibaba.cloud.ai.dataagent.bo.DbConfigBO;
-import com.alibaba.cloud.ai.dataagent.connector.pool.DBConnectionPool;
+import com.alibaba.cloud.ai.dataagent.connector.accessor.AbstractAccessor;
+import com.alibaba.cloud.ai.dataagent.connector.accessor.Accessor;
+import com.alibaba.cloud.ai.dataagent.connector.accessor.AccessorFactory;
 import com.alibaba.cloud.ai.dataagent.dto.schema.TableStructureDTO;
 import com.alibaba.cloud.ai.dataagent.entity.Datasource;
 import com.alibaba.cloud.ai.dataagent.service.datasource.DatasourceService;
@@ -47,7 +49,7 @@ public class TableImportService {
 
 	private final TableImportExcelService excelService;
 	private final DatasourceService datasourceService;
-	private final DBConnectionPool dbConnectionPool;
+	private final AccessorFactory accessorFactory;
 	private final DdlGenerator ddlGenerator;
 
 	/**
@@ -97,7 +99,12 @@ public class TableImportService {
 				tableStructure.getDataRows() != null ? tableStructure.getDataRows().size() : 0);
 
 			// 3. 获取数据库连接
-			connection = dbConnectionPool.getConnection(dbConfig);
+			Accessor accessor = accessorFactory.getAccessorByDbConfig(dbConfig);
+			if (!(accessor instanceof AbstractAccessor)) {
+				result.addError("不支持的数据源类型");
+				return result;
+			}
+			connection = ((AbstractAccessor) accessor).getConnection(dbConfig);
 			connection.setAutoCommit(false);
 
 			// 4. 生成并执行CREATE TABLE DDL
