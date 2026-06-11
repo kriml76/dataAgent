@@ -47,7 +47,9 @@ public class AuthInterceptor implements WebFilter {
             "/v3/api-docs",
             "/uploads",
             "/api/datasource/import-table/template",
-            "/api/agent/"
+            "/api/agent/",
+            "/api/stream/search",
+            "/api/sessions/"
     );
     
     @Override
