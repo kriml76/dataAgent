@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
-  LeftOutlined,
-  RightOutlined,
   InfoCircleOutlined,
   BarChartOutlined,
   TableOutlined,
@@ -54,9 +52,9 @@ const ChatResultSet: React.FC<ChatResultSetProps> = ({ data, pageSize = 20 }) =>
   }, [data, allRows.length]);
 
   // 默认显示图表
-  useState(() => {
+  useEffect(() => {
     setIsChartView(showChart);
-  });
+  }, [showChart]);
 
   const pageData = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
@@ -145,28 +143,30 @@ const ChatResultSet: React.FC<ChatResultSetProps> = ({ data, pageSize = 20 }) =>
         ) : (
           <>
             <div className="result-header">
-              <span className="result-count">共 {totalRows} 条记录</span>
-              {totalPages > 1 && (
-                <div className="pagination">
+              <div className="result-info">
+                <span>查询结果 (共 {totalRows} 条记录)</span>
+                <div className="pagination-controls">
                   <span className="pagination-info">
-                    第 {currentPage} / {totalPages} 页
+                    第 <span className="current-page">{currentPage}</span> 页，共 {totalPages} 页
                   </span>
-                  <button
-                    className="page-btn"
-                    disabled={currentPage <= 1}
-                    onClick={() => setCurrentPage((p) => p - 1)}
-                  >
-                    <LeftOutlined />
-                  </button>
-                  <button
-                    className="page-btn"
-                    disabled={currentPage >= totalPages}
-                    onClick={() => setCurrentPage((p) => p + 1)}
-                  >
-                    <RightOutlined />
-                  </button>
+                  <div className="pagination-buttons">
+                    <button
+                      className="pagination-btn pagination-prev"
+                      disabled={currentPage <= 1}
+                      onClick={() => setCurrentPage((p) => p - 1)}
+                    >
+                      上一页
+                    </button>
+                    <button
+                      className="pagination-btn pagination-next"
+                      disabled={currentPage >= totalPages}
+                      onClick={() => setCurrentPage((p) => p + 1)}
+                    >
+                      下一页
+                    </button>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
             <div className="table-container custom-scrollbar">
               <table className="result-table">
