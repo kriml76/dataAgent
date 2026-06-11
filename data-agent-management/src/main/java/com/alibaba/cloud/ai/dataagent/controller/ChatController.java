@@ -103,8 +103,25 @@ public class ChatController {
 			@RequestBody ChatMessageDTO request) {
 		try {
 			if (request == null) {
+				log.warn("Save message failed: request is null for session {}", sessionId);
 				return ResponseEntity.badRequest().build();
 			}
+
+			// 打印请求详情用于调试
+			log.info(
+					"Save message request - sessionId: {}, role: {}, messageType: {}, contentLength: {}, metadataLength: {}",
+					sessionId, request.getRole(), request.getMessageType(),
+					request.getContent() != null ? request.getContent().length() : 0,
+					request.getMetadata() != null ? request.getMetadata().length() : 0);
+
+			// 提前检查内容大小（TEXT类型最大64KB）
+			if (request.getContent() != null && request.getContent().length() > 65000) {
+				log.warn(
+						"Message content too large! sessionId: {}, contentLength: {} bytes (exceeds 64KB TEXT limit)",
+						sessionId, request.getContent().length());
+				// 可以选择截断或返回错误
+			}
+
 			ChatMessage message = ChatMessage.builder()
 				.sessionId(sessionId)
 				.role(request.getRole())
@@ -114,6 +131,8 @@ public class ChatController {
 				.build();
 
 			ChatMessage savedMessage = chatMessageService.saveMessage(message);
+
+			log.info("Message saved successfully - sessionId: {}, messageId: {}", sessionId, savedMessage.getId());
 
 			// Update session activity time
 			chatSessionService.updateSessionTime(sessionId);
@@ -125,7 +144,16 @@ public class ChatController {
 			return ResponseEntity.ok(savedMessage);
 		}
 		catch (Exception e) {
-			log.error("Save message error for session {}: {}", sessionId, e.getMessage(), e);
+			// 详细的异常日志
+			log.error("=== Save Message Error ===");
+			log.error("Session ID: {}", sessionId);
+			log.error("Exception type: {}", e.getClass().getName());
+			log.error("Exception message: {}", e.getMessage());
+			if (e.getCause() != null) {
+				log.error("Root cause: {} - {}", e.getCause().getClass().getName(), e.getCause().getMessage());
+			}
+			log.error("Full stack trace:", e);
+			log.error("==========================");
 			return ResponseEntity.internalServerError().build();
 		}
 	}

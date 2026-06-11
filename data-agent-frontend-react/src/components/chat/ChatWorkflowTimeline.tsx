@@ -6,7 +6,8 @@ import Python from 'highlight.js/lib/languages/python';
 import Json from 'highlight.js/lib/languages/json';
 import JavaScript from 'highlight.js/lib/languages/javascript';
 import DOMPurify from 'dompurify';
-import ChatResultSet, { type ResultData } from './ChatResultSet';
+import ChatResultSet from './ChatResultSet';
+import type { ResultData } from './charts/types';
 import './ChatWorkflowTimeline.css';
 
 hljs.registerLanguage('sql', Sql);

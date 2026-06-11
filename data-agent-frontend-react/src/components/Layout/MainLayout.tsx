@@ -138,8 +138,14 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         setSelectedAgentId(agentId);
       }
     } else if (agents.length > 0 && !selectedAgentId) {
-      // If no agentId in URL and no selected agent, use the first one
-      setSelectedAgentId(agents[0].id);
+      // If no agentId in URL and no selected agent, use the first one and update URL
+      const firstAgentId = agents[0].id;
+      setSelectedAgentId(firstAgentId);
+      // Update URL with default agentId (skip for agent detail/create pages)
+      if (!location.pathname.startsWith('/agent/')) {
+        urlParams.set('agentId', firstAgentId.toString());
+        navigate(`${location.pathname}?${urlParams.toString()}`, { replace: true });
+      }
     }
   }, [location.search, agents]);
 
@@ -159,7 +165,12 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       setAgents(options);
 
       if (options.length > 0 && !selectedAgentId) {
-        setSelectedAgentId(options[0].id);
+        const defaultId = options[0].id;
+        setSelectedAgentId(defaultId);
+        // Update URL with default agentId when no agentId in URL (skip for agent detail/create pages)
+        if (!location.pathname.startsWith('/agent/') && !new URLSearchParams(location.search).get('agentId')) {
+          navigate(`${location.pathname}?agentId=${defaultId}`, { replace: true });
+        }
       }
     } catch (error) {
       console.error('Failed to load agents:', error);
