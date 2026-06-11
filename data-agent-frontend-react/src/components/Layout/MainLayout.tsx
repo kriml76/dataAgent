@@ -15,14 +15,13 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Select, Avatar, Button, Divider, Badge, Modal, message } from 'antd';
+import { Layout, Menu, Select, Avatar, Button, Modal, message } from 'antd';
 import {
   MenuOutlined,
   RobotOutlined,
   MessageOutlined,
   BookOutlined,
   DatabaseOutlined,
-  SettingOutlined,
   PlusOutlined,
   ThunderboltOutlined,
   ScanOutlined,
@@ -38,7 +37,6 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import agentService from '@/services/agent';
-import modelConfigService from '@/services/modelConfig';
 import type { Agent } from '@/services/agent';
 import { useAuthStore } from '@/stores/auth';
 
@@ -124,31 +122,6 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return routeTitleMap[location.pathname] || 'DATA AGENT';
   }, [location.pathname]);
 
-  useEffect(() => {
-    loadAgents();
-  }, []);
-
-  // Sync selectedAgentId with URL agentId parameter
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-    const agentIdFromUrl = urlParams.get('agentId');
-    if (agentIdFromUrl) {
-      const agentId = parseInt(agentIdFromUrl, 10);
-      if (!isNaN(agentId)) {
-        setSelectedAgentId(agentId);
-      }
-    } else if (agents.length > 0 && !selectedAgentId) {
-      // If no agentId in URL and no selected agent, use the first one and update URL
-      const firstAgentId = agents[0].id;
-      setSelectedAgentId(firstAgentId);
-      // Update URL with default agentId (skip for agent detail/create pages)
-      if (!location.pathname.startsWith('/agent/')) {
-        urlParams.set('agentId', firstAgentId.toString());
-        navigate(`${location.pathname}?${urlParams.toString()}`, { replace: true });
-      }
-    }
-  }, [location.search, agents]);
-
   const loadAgents = async () => {
     try {
       const list = await agentService.list();
@@ -176,6 +149,31 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       console.error('Failed to load agents:', error);
     }
   };
+
+  useEffect(() => {
+    loadAgents();
+  }, []);
+
+  // Sync selectedAgentId with URL agentId parameter
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const agentIdFromUrl = urlParams.get('agentId');
+    if (agentIdFromUrl) {
+      const agentId = parseInt(agentIdFromUrl, 10);
+      if (!isNaN(agentId)) {
+        setSelectedAgentId(agentId);
+      }
+    } else if (agents.length > 0 && !selectedAgentId) {
+      // If no agentId in URL and no selected agent, use the first one and update URL
+      const firstAgentId = agents[0].id;
+      setSelectedAgentId(firstAgentId);
+      // Update URL with default agentId (skip for agent detail/create pages)
+      if (!location.pathname.startsWith('/agent/')) {
+        urlParams.set('agentId', firstAgentId.toString());
+        navigate(`${location.pathname}?${urlParams.toString()}`, { replace: true });
+      }
+    }
+  }, [location.search, agents]);
 
   const handleAgentSwitch = (value: number) => {
     setSelectedAgentId(value);

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable no-useless-escape */
+
 const MARKED_URL = 'https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/marked/12.0.0/marked.min.js';
 const ECHARTS_URL = 'https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/echarts/5.5.0/echarts.min.js';
 

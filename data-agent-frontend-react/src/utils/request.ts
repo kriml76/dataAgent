@@ -15,7 +15,7 @@
  */
 
 import axios from 'axios';
-import type { AxiosRequestConfig, AxiosError } from 'axios';
+import type { AxiosRequestConfig } from 'axios';
 
 // 创建 axios 实例
 const apiClient = axios.create({
@@ -77,10 +77,10 @@ apiClient.interceptors.response.use(
 
 // 类型安全的请求方法
 interface ApiClient {
-  get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>;
-  post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>;
-  put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>;
-  delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>;
+  get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>;
+  post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
+  put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
+  delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>;
 }
 
 const typedApiClient: ApiClient = apiClient as unknown as ApiClient;

@@ -64,6 +64,8 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
       enabled: true
+  codec:
+    max-in-memory-size: 10MB
 
 mybatis:
 
