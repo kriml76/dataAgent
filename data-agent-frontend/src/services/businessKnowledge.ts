@@ -60,9 +60,7 @@ class BusinessKnowledgeService {
       if (keyword) {
         params.keyword = keyword;
       }
-      const response = await request.get<ApiResponse<BusinessKnowledgeVO[]>>(API_BASE_URL, {
-        params,
-      });
+      const response = await request.get<ApiResponse<BusinessKnowledgeVO[]>>(API_BASE_URL, params);
       return response.data || [];
     } catch (error) {
       console.error('Failed to fetch business knowledge list:', error);
@@ -131,9 +129,13 @@ class BusinessKnowledgeService {
    * @param isRecall 是否召回 (true or false)
    */
   async recallKnowledge(id: number, isRecall: boolean): Promise<boolean> {
-    const response = await request.post<ApiResponse<boolean>>(`${API_BASE_URL}/recall/${id}`, null, {
-      params: { isRecall },
-    });
+    const response = await request.post<ApiResponse<boolean>>(
+      `${API_BASE_URL}/recall/${id}`,
+      null,
+      {
+        params: { isRecall },
+      },
+    );
     return response.success;
   }
 

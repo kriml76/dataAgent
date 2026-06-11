@@ -494,10 +494,11 @@ const PromptConfigPage: React.FC = () => {
                 min={0}
                 max={100}
                 placeholder="0-100，数字越大优先级越高"
+                style={{ width: 300 }}
               />
             </Form.Item>
             <Form.Item label="显示顺序" name="displayOrder" style={{ flex: 1 }}>
-              <Input type="number" min={0} placeholder="显示顺序，数字越小越靠前" />
+              <Input type="number" min={0} placeholder="显示顺序，数字越小越靠前" style={{ width: 300 }} />
             </Form.Item>
           </Space>
 

@@ -79,7 +79,7 @@ class SemanticModelService {
     if (agentId !== undefined) params.agentId = agentId.toString();
     if (keyword) params.keyword = keyword;
 
-    const response = await request.get<ApiResponse<SemanticModel[]>>(API_BASE_URL, { params });
+    const response = await request.get<ApiResponse<SemanticModel[]>>(API_BASE_URL, params);
     return response.data || [];
   }
 
