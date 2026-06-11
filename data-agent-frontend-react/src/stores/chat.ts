@@ -106,6 +106,7 @@ interface ChatStore {
   isReportStreaming: boolean;
   currentAgentId: number | undefined;
   chatSidebarCollapsed: boolean;
+  autoScroll: boolean;
   activeChatModel: string;
   currentAgentName: string;
   currentAgentAvatar: string;
@@ -134,7 +135,9 @@ interface ChatStore {
   switchDatasource: (ds: Datasource) => Promise<void>;
   switchModel: (modelId: number) => Promise<void>;
   setChatSidebarCollapsed: (collapsed: boolean) => void;
+  setAutoScroll: (autoScroll: boolean) => void;
   setReportFormat: (format: 'markdown' | 'html') => void;
+  setRequestOptions: (options: Partial<ChatRequestOptions>) => void;
 }
 
 // Session state manager
@@ -204,6 +207,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   isReportStreaming: false,
   currentAgentId: undefined,
   chatSidebarCollapsed: false,
+  autoScroll: true,
   activeChatModel: '',
   currentAgentName: '',
   currentAgentAvatar: '',
@@ -579,6 +583,20 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   setChatSidebarCollapsed: (collapsed: boolean) => {
     set({ chatSidebarCollapsed: collapsed });
+  },
+
+  setAutoScroll: (autoScroll: boolean) => {
+    set({ autoScroll });
+  },
+
+  setRequestOptions: (options: Partial<ChatRequestOptions>) => {
+    const { requestOptions } = get();
+    set({
+      requestOptions: {
+        ...requestOptions,
+        ...options,
+      },
+    });
   },
 
   setReportFormat: (format: 'markdown' | 'html') => {

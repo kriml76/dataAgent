@@ -127,11 +127,11 @@ const ChatMessageList: React.FC = () => {
   }, [store.currentMessages]);
 
   useEffect(() => {
-    if (listRef.current) {
+    if (listRef.current && store.autoScroll) {
       listRef.current.scrollTop = listRef.current.scrollHeight;
       renderECharts(listRef.current);
     }
-  }, [filteredMessages.length, store.nodeBlocks, store.streamingReportContent, renderECharts]);
+  }, [filteredMessages.length, store.nodeBlocks, store.streamingReportContent, store.autoScroll, renderECharts]);
 
   const renderMessageContent = (message: any) => {
     if (message.role === 'user') {

@@ -12,8 +12,12 @@ import {
   SearchOutlined,
   ArrowRightOutlined,
   PauseCircleOutlined,
+  InfoCircleOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
+import { Tooltip, Select } from 'antd';
 import { useChatStore } from '@/stores/chat';
+import PresetQuestions from './PresetQuestions';
 import './ChatInputArea.css';
 
 const ChatInputArea: React.FC = () => {
@@ -21,6 +25,7 @@ const ChatInputArea: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [showDsMenu, setShowDsMenu] = useState(false);
   const [showModelMenu, setShowModelMenu] = useState(false);
+  const [inputControlsCollapsed, setInputControlsCollapsed] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -105,10 +110,17 @@ const ChatInputArea: React.FC = () => {
     if (m.id !== undefined) await store.switchModel(m.id);
   };
 
-  const handleNl2sqlChange = () => {
-    if (store.requestOptions.nl2sqlOnly) {
-      store.requestOptions.humanFeedback = false;
+  const handlePresetQuestionClick = (question: string) => {
+    setInputText(question);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
     }
+  };
+
+  const handlePageSizeChange = (value: number) => {
+    store.setRequestOptions({
+      pageSize: value,
+    });
   };
 
   return (
@@ -180,6 +192,171 @@ const ChatInputArea: React.FC = () => {
         </div>
       </div>
 
+      {/* Input Controls (Collapsible) */}
+      <div className="input-controls">
+        <div
+          className="input-controls-header"
+          onClick={() => setInputControlsCollapsed(!inputControlsCollapsed)}
+        >
+          <div className="header-left">
+            <SettingOutlined className="header-icon" />
+            <span className="input-controls-title">更多选项</span>
+          </div>
+          <button
+            type="button"
+            className="input-controls-toggle-btn"
+          >
+            {inputControlsCollapsed ? (
+              <>
+                <DownOutlined className="input-controls-toggle-icon" />
+                展开
+              </>
+            ) : (
+              <>
+                <UpOutlined className="input-controls-toggle-icon" />
+                收起
+              </>
+            )}
+          </button>
+        </div>
+
+        {!inputControlsCollapsed && (
+          <div className="input-controls-body">
+            {/* Preset Questions */}
+            {store.currentSession && store.currentAgentId && (
+              <PresetQuestions
+                agentId={store.currentAgentId}
+                onQuestionClick={handlePresetQuestionClick}
+              />
+            )}
+
+            {/* Switch Group */}
+            <div className="switch-group">
+              <div className="switch-item">
+                <Tooltip
+                  open={store.requestOptions.nl2sqlOnly ? undefined : false}
+                  title="该功能在NL2SQL模式下不能使用"
+                  placement="top"
+                >
+                  <label
+                    className={`option-chip ${
+                      store.requestOptions.humanFeedback ? 'active' : ''
+                    } ${
+                      store.requestOptions.nl2sqlOnly || store.isStreaming || store.showHumanFeedback
+                        ? 'disabled'
+                        : ''
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={store.requestOptions.humanFeedback}
+                      disabled={
+                        store.requestOptions.nl2sqlOnly ||
+                        store.isStreaming ||
+                        store.showHumanFeedback
+                      }
+                      className="hidden-checkbox"
+                      onChange={() => {
+                        store.setRequestOptions({
+                          humanFeedback: !store.requestOptions.humanFeedback,
+                        });
+                      }}
+                    />
+                    <UserOutlined style={{ fontSize: 11 }} />
+                    人工反馈
+                  </label>
+                </Tooltip>
+              </div>
+
+              <div className="switch-item">
+                <label
+                  className={`option-chip ${store.requestOptions.nl2sqlOnly ? 'active' : ''} ${
+                    store.isStreaming || store.showHumanFeedback ? 'disabled' : ''
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={store.requestOptions.nl2sqlOnly}
+                    disabled={store.isStreaming || store.showHumanFeedback}
+                    className="hidden-checkbox"
+                    onChange={() => {
+                      const newNl2sqlOnly = !store.requestOptions.nl2sqlOnly;
+                      store.setRequestOptions({
+                        nl2sqlOnly: newNl2sqlOnly,
+                        humanFeedback: newNl2sqlOnly ? false : store.requestOptions.humanFeedback,
+                      });
+                    }}
+                  />
+                  <SearchOutlined style={{ fontSize: 11 }} />
+                    仅NL2SQL
+                </label>
+              </div>
+
+              <div className="switch-item">
+                <label className={`option-chip ${store.autoScroll ? 'active' : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={store.autoScroll}
+                    className="hidden-checkbox"
+                    onChange={() => {
+                      store.setAutoScroll(!store.autoScroll);
+                    }}
+                  />
+                  <ArrowRightOutlined style={{ fontSize: 11, transform: 'rotate(-90deg)' }} />
+                    自动Scroll
+                </label>
+              </div>
+
+              <div className="switch-item">
+                <Tooltip
+                  title="启用本功能会将SQL查询结果存储到DataAgent项目的数据库中，如果数据量较大不建议开启本功能"
+                  placement="top"
+                >
+                  <label
+                    className={`option-chip ${
+                      store.requestOptions.showSqlResults ? 'active' : ''
+                    } ${store.isStreaming || store.showHumanFeedback ? 'disabled' : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={store.requestOptions.showSqlResults}
+                      disabled={store.isStreaming || store.showHumanFeedback}
+                      className="hidden-checkbox"
+                      onChange={() => {
+                        store.setRequestOptions({
+                          showSqlResults: !store.requestOptions.showSqlResults,
+                        });
+                      }}
+                    />
+                    <TableOutlined style={{ fontSize: 11 }} />
+                    显示SQL结果
+                  </label>
+                </Tooltip>
+              </div>
+
+              <div className="switch-item">
+                <span className="switch-label">每页数量</span>
+                <Select
+                  className="page-size-select"
+                  value={store.requestOptions.pageSize}
+                  disabled={store.isStreaming || store.showHumanFeedback}
+                  onChange={handlePageSizeChange}
+                  size="small"
+                  style={{ width: 70 }}
+                  options={[
+                    { value: 5, label: '5' },
+                    { value: 10, label: '10' },
+                    { value: 20, label: '20' },
+                    { value: 50, label: '50' },
+                    { value: 100, label: '100' },
+                  ]}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Textarea */}
       <div className="textarea-wrap">
         <textarea
@@ -196,50 +373,7 @@ const ChatInputArea: React.FC = () => {
 
       {/* Action bar */}
       <div className="action-bar">
-        <div className="action-bar-left">
-          <div className="extra-options">
-            <label className={`option-chip ${store.requestOptions.humanFeedback ? 'active' : ''}`}>
-              <input
-                type="checkbox"
-                checked={store.requestOptions.humanFeedback}
-                disabled={store.requestOptions.nl2sqlOnly || store.isStreaming}
-                className="hidden-checkbox"
-                onChange={() => {
-                  store.requestOptions.humanFeedback = !store.requestOptions.humanFeedback;
-                }}
-              />
-              <UserOutlined style={{ fontSize: 11 }} />
-              人工反馈
-            </label>
-            <label className={`option-chip ${store.requestOptions.nl2sqlOnly ? 'active' : ''}`}>
-              <input
-                type="checkbox"
-                checked={store.requestOptions.nl2sqlOnly}
-                disabled={store.isStreaming}
-                className="hidden-checkbox"
-                onChange={() => {
-                  store.requestOptions.nl2sqlOnly = !store.requestOptions.nl2sqlOnly;
-                  handleNl2sqlChange();
-                }}
-              />
-              <SearchOutlined style={{ fontSize: 11 }} />
-              仅NL2SQL
-            </label>
-            <label className={`option-chip ${store.requestOptions.showSqlResults ? 'active' : ''}`}>
-              <input
-                type="checkbox"
-                checked={store.requestOptions.showSqlResults}
-                disabled={store.isStreaming}
-                className="hidden-checkbox"
-                onChange={() => {
-                  store.requestOptions.showSqlResults = !store.requestOptions.showSqlResults;
-                }}
-              />
-              <TableOutlined style={{ fontSize: 11 }} />
-              显示SQL结果
-            </label>
-          </div>
-        </div>
+        <div className="action-bar-left"></div>
 
         <div className="action-bar-right">
           {!store.isStreaming ? (
