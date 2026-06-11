@@ -5,7 +5,8 @@ import { useChatStore } from '@/stores/chat';
 import { renderMarkdownContent } from '@/utils/markdown';
 import { useEchartsRenderer } from '@/hooks/useEchartsRenderer';
 import ChatWelcome from './ChatWelcome';
-import ChatResultSet, { type ResultData } from './ChatResultSet';
+import ChatResultSet from './ChatResultSet';
+import type { ResultData } from './charts/types';
 import ChatWorkflowTimeline, { type GraphNodeResponse } from './ChatWorkflowTimeline';
 import ChatMarkdownReport from './ChatMarkdownReport';
 import './ChatMessageList.css';
@@ -99,32 +100,10 @@ const ChatMessageList: React.FC = () => {
     };
   }, []);
 
-  const filteredMessages = useMemo(() => {
-    const msgs = store.currentMessages;
-    console.log(msgs);
-    if (!msgs.length) return msgs;
-
-    const result: typeof msgs = [];
-    for (let i = 0; i < msgs.length; i++) {
-      const msg = msgs[i];
-      if (!msg) continue;
-      if (
-        msg.role === 'assistant' &&
-        TIMELINE_ABSORBED_TYPES.has(msg.messageType)
-      ) {
-        const surroundHasTimeline = msgs.some(
-          (m, j) =>
-            j !== i &&
-            m.role === 'assistant' &&
-            m.messageType === 'timeline' &&
-            m.sessionId === msg.sessionId
-        );
-        if (surroundHasTimeline) continue;
-      }
-      result.push(msg);
-    }
-    return result;
-  }, [store.currentMessages]);
+const filteredMessages = useMemo(() => {
+  const msgs = store.currentMessages;
+  return msgs.filter(Boolean);
+}, [store.currentMessages]);
 
   useEffect(() => {
     if (listRef.current && store.autoScroll) {
