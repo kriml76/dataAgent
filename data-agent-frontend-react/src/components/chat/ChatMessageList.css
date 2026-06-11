@@ -95,6 +95,46 @@
   transform: translateY(-1px);
 }
 
+/* Agent response block structure - title and content separation */
+.agent-response-block {
+  margin-bottom: 12px;
+}
+
+.agent-response-block:last-child {
+  margin-bottom: 0;
+}
+
+.agent-response-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  padding: 8px 12px;
+  background: rgba(59, 130, 246, 0.06);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.agent-response-title::before {
+  content: '';
+  width: 4px;
+  height: 14px;
+  background: #3b82f6;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.agent-response-content {
+  padding: 4px 4px 4px 16px;
+  border-left: 2px solid #e2e8f0;
+  margin-left: 4px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #334155;
+}
+
 /* Report card: full width like markdown content */
 .report-card {
   max-width: 100% !important;
