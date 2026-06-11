@@ -211,6 +211,7 @@ const ChatMarkdownReport: React.FC<ChatMarkdownReportProps> = ({ content }) => {
         cancelText="关闭"
         okText="确定"
         width="100vw"
+        footer={null}
         style={{ top: 0, maxWidth: '100vw', padding: 0 }}
         closeIcon={<CloseOutlined />}
         className="fullscreen-modal"
