@@ -73,6 +73,32 @@ const ChatMessageList: React.FC = () => {
   const listRef = useRef<HTMLDivElement>(null);
   const { renderECharts } = useEchartsRenderer();
 
+  useEffect(() => {
+    (window as any).copyTextToClipboard = (btn: HTMLElement) => {
+      const text = btn.previousElementSibling?.textContent || '';
+      const originalText = btn.textContent;
+
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          btn.textContent = '已复制!';
+          setTimeout(() => {
+            btn.textContent = originalText;
+          }, 3000);
+        })
+        .catch(() => {
+          btn.textContent = '复制失败';
+          setTimeout(() => {
+            btn.textContent = originalText;
+          }, 3000);
+        });
+    };
+
+    return () => {
+      delete (window as any).copyTextToClipboard;
+    };
+  }, []);
+
   const filteredMessages = useMemo(() => {
     const msgs = store.currentMessages;
     console.log(msgs);
@@ -122,7 +148,7 @@ const ChatMessageList: React.FC = () => {
     switch (message.messageType) {
       case 'html':
         return (
-          <div className="ai-card">
+          <div className="ai-card python-code-may-be">
             <div className="md-body" dangerouslySetInnerHTML={{ __html: sanitizeHtml(message.content) }} />
           </div>
         );
