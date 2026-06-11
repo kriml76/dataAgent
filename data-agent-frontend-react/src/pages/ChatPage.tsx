@@ -51,11 +51,14 @@ const ChatPage = () => {
   useEffect(() => {
     if (currentAgentId) {
       if (prevAgentIdRef.current !== currentAgentId) {
-        store.sessions = [];
-        store.currentSession = null;
-        store.currentMessages = [];
-        store.isStreaming = false;
-        store.nodeBlocks = [];
+        // 使用 Zustand 的 set 方法更新状态，确保触发重新渲染
+        useChatStore.setState({
+          sessions: [],
+          currentSession: null,
+          currentMessages: [],
+          isStreaming: false,
+          nodeBlocks: [],
+        });
         init(currentAgentId);
         prevAgentIdRef.current = currentAgentId;
       }
