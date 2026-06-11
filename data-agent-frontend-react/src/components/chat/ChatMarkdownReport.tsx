@@ -49,11 +49,8 @@ const ChatMarkdownReport: React.FC<ChatMarkdownReportProps> = ({ content }) => {
 
   const renderMarkdown = useCallback((md: string): string => {
     if (!md) return '';
-    return DOMPurify.sanitize(renderMarkdownContent(md), {
-      ADD_TAGS: ['div', 'pre', 'code', 'button'],
-      ADD_ATTR: ['style', 'class', 'data-echarts-config', 'onclick', 'data-code'],
-      ALLOW_DATA_ATTR: true,
-    }) as string;
+    // markdown.ts 中已包含 DOMPurify 净化，保留 data-code 等必要属性
+    return renderMarkdownContent(md);
   }, []);
 
   const loadHtmlToIframe = useCallback(
